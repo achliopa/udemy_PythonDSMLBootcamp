@@ -121,3 +121,39 @@ np.array([[1,2,3],[4,5,6],[7,8,9]])
 * we can use the boolean array for conditional selection `arr[bppl_arr]` => `array([5,6,7,8,9,10])` so i pass the bool array to the array and filter it out, sekect what is true or `arr[arr>5]`
 
 ### Lecture 20 - Numpy Operations
+
+* we setup an array `arr = np.arange(0,11)`
+* we can add two arrays eloement by element with `arr + arr` subtract them or multiply them
+* we can use a scalar broadcasting its effect to all array elements `arr+100` => `array([100,101,102,103,104,105,106...]) same we can doo  - / * **
+* numpy throws warnings instead of errors. e.g zero division
+* numpy has special word *inf* for infinity and *nan* for not a number
+* we can use universal operations on arrays `np.sqrt(arr)` squareroots every element in the array `np.exp(arr)` raises array to exp and `np.max(arr)` finds the maximum value like `arr.max()` 
+* [univ oper list](https://docs.scipy.org/doc/numpy/reference/ufuncs.html)
+
+### Lecture 21 - Numpy Exercise Overview
+
+* to sum all columns in a matrix `mat.sum(axis=0`
+* see docstring of function in jupyter (shift+tab)
+
+## Section 6 - Python for Data Analysis - Pandas
+
+### Lecture 24 - Introduction to Pandas
+
+* Pandas is an open source library built on top of NumPy
+* It allows for fast analysis and data cleaning and preparation
+* It excels in performance and productivity
+* It also has buil-in  visualization features
+* It can work with data from a variety of sources
+* we can install pandas by going to your command line or terminal and using either `conda install pandas` or `pip install pandas`
+* we will see:
+	* series
+	* dataframes
+	* missing data
+	* groupBy
+	* merging,joining, concat
+	* operations
+	* data IO
+
+### Lecture 25 - Series
+
+* 
