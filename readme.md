@@ -242,4 +242,114 @@ my_data = [10,20,30]
 
 ### Lecture 29 - Missing Data
 
-* 
+* we define a dictionary to pupulate a dataFrame `d = {'A':[1,2,np.nan],'B':[5,np.nan,np.nan],'C':[1,2,3]}` filling in as values lists with null values `np.nan`
+* we use it to create a datafram `df = pd.dataFrame(d)`
+* we drop the missing values with `df.dropna()`. this drops any row that has missing value(s). if we pass axis=1 de drop the columns with missing values
+* we can pass a threshold argument to dropna to set the minimum number of null required to drop the row or column `df.dropna(thresh=2)`
+* we can fill in missing values with *fillna* `df.fillna(value='FILL VALUE')` will pass the FILL VALUE string to any null datapoint
+* we can fill the mean of a column to a missing datapoint `df['A'].fillna(value=df['A'].mean())`
+
+### Lecture 30 - Groupby
+
+* groupby is used to produce aggregates, it allows to group together rows based off of a column and perform an aggregate function on them. e.g we can groupby id
+* we use a dictionary to produce a dataframe
+```
+data = {'Company':['GOOG','GOOG','MSFT','MSFT','FB','FB'],
+       'Person':['Sam','Charlie','Amy','Vanessa','Carl','Sarah'],
+       'Sales':[200,120,340,124,243,350]}
+df = pd.DataFrame(data)
+```
+* we have a column based on which we can group sales. Company `byComp = df.groupby('Company')`. this produces a groupby object not a df. 
+* the way to use groupby objects is to apply aggregate functions on them `byComp.mean()`
+* we can use many aggregate functions like `.sum() .std()`
+* the result of the aggregate function is a dataframe. we can use df methods on it `byComp.sum().loc['FB']`
+* usually we produce oneliners by chaining methods
+* usually aggregate methods operate an return only number columns to the newdataframe. some can operate on strings and return result columns for them e.g .count() .max() .min()
+* if insteade of an aggregate method we chain a `.descripe()` method to a groupby object, we get many aggregate results in the resulting df. 
+we can chain after the aggregate or desgribe `.transpose()` to view them as a row rather than column
+
+### Lecture 31 - Merging, Joining and Concatenating
+
+* we create 3 dataframes (df1,df2,df3) with same labeled columns ('A'.'B','C','D'), continuous indexes and datapoints strings that represend the combination of column and index e.g 'B5'
+* we concatenate them (glue them together, stacking up rows) with `pd.concat([df1,df2,df3])`. the dimensions should match on the axis we are concatenating on. here we dont spec axis so we concatenate along the row (axis=0) which has size 4 for all
+* we can concatenate along the column with `pd.concat([df1,df2,df3], axis=1)`. the rule about size applies. missing values are NaN. the result is a dataframe
+* we create two new dataframes with same indexes, columns that have continuous letters labels and a key column with the same datapoints in each
+```
+left = pd.DataFrame({'key': ['K0', 'K1', 'K2', 'K3'],
+                     'A': ['A0', 'A1', 'A2', 'A3'],
+                     'B': ['B0', 'B1', 'B2', 'B3']})
+   
+right = pd.DataFrame({'key': ['K0', 'K1', 'K2', 'K3'],
+                          'C': ['C0', 'C1', 'C2', 'C3'],
+                          'D': ['D0', 'D1', 'D2', 'D3']})   
+```
+* we can use merge to merge dataframes in the same way we merge SQL tables. 
+* we do it with `pd.merge(left,right,how='inner,on='key')`. the default how is 'inner' like innerjoin, on is where the merge takes place
+* we can do inner merge on multiple keys where the merge take place where the compination of keys is the same for both dataframes
+* an outer merge stacks up all combinations of keys
+* there is also right or left merge
+* joining is a conveninet method of combiningthe columns of two potentially different-indexed DataFrames into a single result DataFrame
+* id our dataframes are df1 and df2 we join them `d1.join(df2)` innerjoin. the outer join is `df1.join(df2,how='outer')`. inner join between a range of keys that are common, outer hjoin join all.
+
+### Lecture 32 - Operations
+
+ * we create dataframe `df = pd.DataFrame({'col1':[1,2,3,4],'col2':[444,555,666,444],'col3':['abc','def','ghi','xyz']})` with 3 columns and unlabeled index
+ * to find unique values in dataframes in a column we use `df['col2'].unique()` which returns a numpy array
+ * to count the unique values `len(df['col2'].unique())` or `df['col2'].nunique()`
+ * to get counts for the occurence of a value in a column we use `df['col2'].value_counts()` which returns a 2-d numpy matrix with the value and counter
+ * to select data from a df we can use conditional selection or the apply method
+ * we define a methodL
+ ```
+ def times2(x):
+ 	return x*2
+ ```
+ * to broadcast a function to a dataframe we use apply. e.g `df['col1'].apply(times2)` broadcasts its to the col1 values outputing a matrix (numpy)
+ * we can apply built in methods or even lambdas `df['col2'].apply(lambda x: x*2)`
+ * we can get the column label with `df.columns` which gives an Index object with column labels or for index `df.index`
+ * we can sort values in a column with `df.sort_values('col2')`. index follows the sort
+ * to find the nulls in the datafram we can use `df.isnull()`
+ * we create dataframe with repeating values
+ * we can create pivot tables out of a dataframe with `df.pivot_table(values='D',index=['A','B'],columns=['C'])`. this will be a multiindex dataframe.
+
+ ### Lecture 33 - Data Input and Output
+
+ * to input data from external sources we need to install extra libraries.
+ ```
+ conda install sqlalchemy
+ conda install lxml
+ conda install html5lib
+ conda install BautifulSoup4
+ ```
+ * we will io data from CSV,Excel,HTML,SQL
+ * `import pandas as pd`
+ * we find our current dir in Jupyter with 'pwd'
+ * we have a csv file named *example* with the following content
+ ```
+a,b,c,d
+0,1,2,3
+4,5,6,7
+8,9,10,11
+12,13,14,15
+ ```
+ * we read a csv named *example* in the current dir. `df = pd.read_csv('example`)` which gets imported and stored as a dataframe
+ * pandas can read from a wide variety of file formats with `.read_<filetype>(<filename>)`
+ * we can store to a file e.g csv with `df.to_csv('my_output', index=False)` we set index to false as we dont eant to save the index as a separate column
+ * pandas can read from excel but read only the data. not formulas  or macros. reading excels with formulas will make it to crash
+ * to read from excel we install `conda install xlrd` (installed with anaconda) or with pip
+* we have an excel file *Excel_sample.xlsx* with same data as the csv in Sheet1
+* pandas treats excel as a set of dataframes (a dataframe per sheet)
+* the expression to read is `df = pd.read_excel('Excel_Sample.xlsx',sheetname='Sheet1')` which stores the input in a dataframe
+* we can store a dtaframe to an excel sheet `df.to_excel('Excel_Sample2.xlsx',sheet_name='NewSheet')`
+* to read from HTML we need to install some libraries and restart jupyter notebook
+```
+ conda install lxml
+ conda install html5lib
+ conda install BautifulSoup4
+```
+* we will read from the page *http://www.fdic.gov/bank/individual/failed/banklist.html* whoch contains a table
+* we read with `df = pd.read_html('http://www.fdic.gov/bank/individual/failed/banklist.html')` which stores data in a list where df[0] is a DataFrame
+* panda is not the best way to read sql as there are many libs for each SQL DB flavor
+* we create a sqlengine `from sqlalchemy import create_engine`
+* then we create an imemory sqlite db with the engine to test our code `engine = create_engine('sqlite:///:memory:')`
+* we store a dataframe as a sql table in our test db `df.to_sql('data', engine)` data is the name of the table
+* we readthe table and store it as a dataframe `sql_df = pd.read_sql('data',con=engine)`
