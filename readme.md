@@ -156,4 +156,90 @@ np.array([[1,2,3],[4,5,6],[7,8,9]])
 
 ### Lecture 25 - Series
 
+* panda datatype like a numpy array
+* the difference between the two is that pandas series can be accessed by label (or indexed by label)
+* to use pandas we need to import numpy first
+```
+import numpy as np
+inport pandas as pd
+```
+* we create various series from various datatypes.
+* first we create standard python lists
+```
+labels = ['a','b','c']
+my_data = [10,20,30]
+```
+* then we cast the values to numpy array `arr = np.array(my_data)`
+* and we set the relationship between the two as a standard python dictionary `d = {'a':10,'b':20,'c':30}`
+* we end up with 4 objects, 2 lists, 1 array, 1 dictionary
+* we create the panda series with `pd.Series(data = my_data)` setting only the actual data not the labels. this auto indexes with numbers 0,1,2,...
+* we can specify the index with `pd.Series(data=my_data, index=labels)`. now the indexes have labels 'a'.'b','c'
+* so unlike numpy arrays we have labeled indexes. so we can call the data points using the labels
+* we can use `pd.Series(my_data,labels)` taking care to keep the order
+* we can create a series passing a numpy array . is like passign a data list `pd.Series(arr,label)` 
+* we can create a series passing a python dictionary. this auto creates the labels using the key value relationship. keys become index labels and values the data.   `pd.Series(d)` <=> `pd.Series(my_data,labels)`
+* a series can have any type of data as datapoints. `pd.Series(data=labels)` => `dtype: pbject`
+* it can even hold functions as datapoints `pd.Series(data=[sum,print,len])`
+* grabbing data from a series is similar to grabbing data from a dictionary `ser1 = pd.Series([1,2,3,4],['USA','Germany','USSR','Japan'])` `ser1['USA']` => 1. i should now the label type thow. if there are no labels i grab them like python lists or numpy arrays
+* adding series is done based on index. `series1+series2` if an index is not common ehat happens is that the result series interpolates non common label datapoints but the val is NaN
+* when we perform operations on integer datapoints they are converted to floats
+
+### Lecture 26 - DataFrames: Part 1
+
+* expose the true power of pandas
+* we import randn `from numpy.random import randn` and seed the generator `np.random.seed(101)`
+* DataFram builds on series and has similar function signature but has a columns argument  `df = pd.DataFrame(randn(5,4),['A','B','C','D','E'], ['W','X','Y','Z'] )` columnd arg is the label index for columns. so dataframe is for numpy matrices what series is for numpy 1-D vectors. `df` prints out the table with axis labels
+* DataFrame in essence is a set  of series sharing an index. we can use indexing and selection  to extract series out of a DataFrame e.g `df['W']` an alternate way is `df.W`
+* if we pass multiple keys `df['W','Z']` we get a sub DataFrame
+* we can set a new column. not as `df['new']` but as `df['new'] = df['W'] + df['Y']` we need to assign a defined column to it
+* we can delete a column by `df.drop('W', axis=1)` if i dont specify an axis i can delete a row passing the correct label. drop does not affect the original dataframe. to alter the orginal dataframe we must pass as argument *inplace=True* `df.drop('W', axis=1,inplace=True)`
+* to drop a row we can omit axis od set it to 0 `df.drop('E',axis=0)`
+* rows have axis = 0 and columns have axis =1 this comes from numpy this is shown in `df.spape()` with gives a tuple `(5,4)` 0 index is rows and 1 is columns
+* to select rows we use `df.loc['A']` this returns a series so rows are series like columns. to select locs we canuse index instead of lables with iloc `df.iloc[1]`
+* to select subsets of rows and columns we use loc and numpy notation with comma `df.loc['B','Y']` or `df.loc[['A','B'],['X','Y']]`
+
+### Lecture 27 - DataFrames: Part 2
+
+* we see conditional selection and multyindex selection
+* we can use operands and broadcast selectors in all datapoints `booldf = df > 0` gives the df where all datapoints are boolean
+* if we pass bool_df in df `df[bool_df]` we the df where all datapoints where booldf is false are NaN (null). another way is `df[df>0]`
+* we spec `df['W']>0` and get a series of the column with booleans. if I pass it as a conditional selector in df `df[df['W']>0]` this filter is applied in all columns filtering out 3 row
+* we want to get all the rows of the datafram where Z is <0. `df[df['Z']<0]`. we know Z is <0 only in 3rd row so that is what we get back
+* we can do selction on the fly on the filtered dataframe `df[df['W']>0]['X']` or `df[df['W']>0][['Y','X']]`
+* one liners are generaly faster
+* we can use multiple conditions, `(df['W']>0) and (df[Y]>1)` throuws an error as normal python boolean operators cannot handle series of data, only single bools. he have to use & instead `(df['W']>0) & (df[Y]>1)` is valid and can be passed ans condition selector `df[(df['W']>0) & (df[Y]>1)]` for or we use |
+* we can reset the index or set it to something else. we use `df.reset_index()` to reset the index (now they are not labels but index numbers) and set the labels to a separate column named *index*. this opeartion does not alter the original dataframe
+* we can set the index. we set a new list of labels `newind = 'CA NY WY OR CO'.split()`. we then set it as column `df['States'] = newind` and then st this column as index with `df.set_inex('States')` . the effect of that is to create a new row for the index column title. 
+
+### Lecture 28 - Dataframes: Part 3
+
+* we look into multindex dataframes and multilevel index.
+* we do multiIndex as follows:
+	* we create two lists
+	```
+	outside = ['G1','G1','G1','G2','G2','G2']
+	inside = [1,2,3,1,2,3]
+	```
+	* we zip them to a list of tuples
+	```
+	hier_index = list(zip(outside,inside))
+	``` 
+	* we create a dataframe multiindex  using the special pandas method *MultiIndex* specifing we will use tuples
+	```
+	hier_index = pd.MultiIndex.from_tuples(hier_index)
+	```
+	* we get a MultiIndex object with levels and labels
+	* we create a dataframe with 6by2 random data, the hier_index and  lables for the 2 columns
+	```
+	df = pd.DataFrame(randn(6,2),hier_index, ['A','B'])
+	```
+	* the result is a 6 by 2 dataframe with 2 columns for indexes, the first w/ lables G1 and G2 and the second with labels 1,2,3 all grouped according to their appearance on the lists we declared them. the two columns are called levels
+* we can call data from multiindexed dataframes `df.loc['G1']` and we can chain multiple levels `df.loc['G1'].loc[1]`
+* we can get and set the names of the index level columns: get `df.index.names` retrieves a FrozenList with None. to set we use `df.index.names = ['Groups','Num']`. the index labels are in a new extra row
+* we can select a specific element with `df.loc['G2'].loc[[2]['B']`
+* we can get a crossSection or rows/columns with xs which we can use when we have m,ultilevel index. `df.xs('G1')` is like `df.loc['G1']` but xs has the ability to go insiude the multilevel index
+* say we want all values with num index = 1 `df.xs(1,level='Num')`
+
+### Lecture 29 - Missing Data
+
 * 
