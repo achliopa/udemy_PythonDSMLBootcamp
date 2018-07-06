@@ -365,5 +365,56 @@ a,b,c,d
 * What is the highest amount of OvertimePay in the dataset ? `sal['OvertimePay'].max()`
 * What is the job title of JOSEPH DRISCOLL ? `sal[sal['EmployeeName']=='JOSEPH DRISCOLL']['JobTitle']`
 * How much does JOSEPH DRISCOLL make (including benefits)? sal[sal['EmployeeName']=='JOSEPH DRISCOLL']['TotalPayBenefits']`
-* What is the name of highest paid person (including benefits)? sal[sal['TotalPayBenefits'] == max(sal['TotalPayBenefits'])]`
+* What is the name of highest paid person (including benefits)? sal[sal['TotalPayBenefits'] == max(sal['TotalPayBenefits'])]['EmployeeName']`
+* alternative mehod to get max `sal.lov[sal['TotalPayBenefits'].idxmax()]` or `sal.iloc[sal['TotalPayBenefits'].argmax()]`
 * What is the name of lowest paid person (including benefits)? Do you notice something strange about how much he or she is paid? `sal[sal['TotalPayBenefits'] == min(sal['TotalPayBenefits'])]`
+* What was the average (mean) BasePay of all employees per year? (2011-2014) ? `sal.groupby('Year')['BasePay'].mean()`
+* How many unique job titles are there? `len(sal['JobTitle'].unique())` or `sal['JobTitle'].nunique()`
+* What are the top 5 most common jobs? `sal.groupby('JobTitle')['JobTitle'].count().sort_values(ascending=False)[:5]` alternatively `sal['JobTitle'].value_counts().head(5)`
+* How many Job Titles were represented by only one person in 2013? 
+```
+usal = sal[(sal['Year']==2013)].groupby('JobTitle')['JobTitle'].count()
+len(usal[usal == 1])
+```
+alternatively `sum(sal[sal['Year']==2013]['JobTitle'].value_counts() == 1)`
+* How many people have the word Chief in their job title? (This is pretty tricky)
+	* my solution	
+	```
+	ysal = sal.drop_duplicates(["EmployeeName", "Year"])
+	ysal[ysal['JobTitle'].str.lower().str.contains('chief')].shape[0]
+	```
+	* teacher solution
+	```
+	def chief_string(title):
+		if 'chief' in title.lower().split():
+			return True
+		else:
+			return False
+	sum(sal['JobTitle'].apply(lambda x: chief_string(x)))
+	```
+* Bonus: Is there a correlation between length of the Job Title string and Salary?
+```
+# we make a new column for title length
+# we use method corr() for correlation
+sal['title_len'] = sal['JobTitle'].apply(len)
+sal['TotalPayBenefits','title_len'].corr()
+```
+
+### Lecture 36 - Ecommerce Purchase Exercises
+
+* What is the average Purchase Price? `ecom['Purchase Price'].mean()`
+* What were the highest and lowest purchase prices?
+```
+ecom['Purchase Price'].max()
+ecom['Purchase Price'].min()
+```
+* How many people have English 'en' as their Language of choice on the website? `ecom[ecom['Language'] == 'en'].shape[0]` or `ecom['Language'] == 'en']['Language'].count()`
+* How many people have the job title of "Lawyer" ? `ecom[ecom['Job'] == 'Lawyer'].shape[0]`
+* How many people made the purchase during the AM and how many people made the purchase during PM ? `ecom['AM or PM'].value_counts()`
+* What are the 5 most common Job Titles? `ecom['Job'].value_counts().head(5)`
+* Someone made a purchase that came from Lot: "90 WT" , what was the Purchase Price for this transaction? `ecom[ecom['Lot'] == '90 WT']['Purchase Price']`
+* What is the email of the person with the following Credit Card Number: 4926535242672853 `ecom[ecom['Credit Card'] == 4926535242672853]['Email']`
+* How many people have American Express as their Credit Card Provider and made a purchase above $95 ? `ecom[(ecom['CC Provider'] == 'American Express') & (ecom['Purchase Price'] > 95.0)].shape[0]`
+* Hard: How many people have a credit card that expires in 2025? ` sum(ecom['CC Exp Date'].apply(lambda x: x[3:]=='25))`
+* Hard: What are the top 5 most popular email providers/hosts (e.g. gmail.com, yahoo.com, etc...) `ecom['Email'].str.split('@',1,expand=True)[1].value_counts().head(5)` other solution `ecom['Email].apply(lambda email: email.split('@')[1]).value_counts().head(5)`
+* to get column names `df.columns`
