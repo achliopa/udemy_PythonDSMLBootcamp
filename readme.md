@@ -124,7 +124,7 @@ np.array([[1,2,3],[4,5,6],[7,8,9]])
 
 * we setup an array `arr = np.arange(0,11)`
 * we can add two arrays eloement by element with `arr + arr` subtract them or multiply them
-* we can use a scalar broadcasting its effect to all array elements `arr+100` => `array([100,101,102,103,104,105,106...]) same we can doo  - / * **
+* we can use a scalar broadcasting its effect to all array elements `arr+100` => `array([100,101,102,103,104,105,106...])` same we can doo  - / * **
 * numpy throws warnings instead of errors. e.g zero division
 * numpy has special word *inf* for infinity and *nan* for not a number
 * we can use universal operations on arrays `np.sqrt(arr)` squareroots every element in the array `np.exp(arr)` raises array to exp and `np.max(arr)` finds the maximum value like `arr.max()` 
@@ -209,7 +209,7 @@ my_data = [10,20,30]
 * one liners are generaly faster
 * we can use multiple conditions, `(df['W']>0) and (df[Y]>1)` throuws an error as normal python boolean operators cannot handle series of data, only single bools. he have to use & instead `(df['W']>0) & (df[Y]>1)` is valid and can be passed ans condition selector `df[(df['W']>0) & (df[Y]>1)]` for or we use |
 * we can reset the index or set it to something else. we use `df.reset_index()` to reset the index (now they are not labels but index numbers) and set the labels to a separate column named *index*. this opeartion does not alter the original dataframe
-* we can set the index. we set a new list of labels `newind = 'CA NY WY OR CO'.split()`. we then set it as column `df['States'] = newind` and then st this column as index with `df.set_inex('States')` . the effect of that is to create a new row for the index column title. 
+* we can set the index. we set a new list of labels `newind = 'CA NY WY OR CO'.split()`. we then set it as column `df['States'] = newind` and then st this column as index with `df.set_index('States')` . the effect of that is to create a new row for the index column title. 
 
 ### Lecture 28 - Dataframes: Part 3
 
@@ -353,3 +353,17 @@ a,b,c,d
 * then we create an imemory sqlite db with the engine to test our code `engine = create_engine('sqlite:///:memory:')`
 * we store a dataframe as a sql table in our test db `df.to_sql('data', engine)` data is the name of the table
 * we readthe table and store it as a dataframe `sql_df = pd.read_sql('data',con=engine)`
+
+## Section 7 - Python for Data Analysis - Pandas Exercises
+
+### Lecture 34 - SF Salaries Exercise 
+
+* we get datasets from kaggle
+* Check the head of the DataFrame `sal.head()`
+* Use the .info() method to find out how many entries there are. `sal.info()`
+* What is the average BasePay ? `sal['BasePay'].mean()`
+* What is the highest amount of OvertimePay in the dataset ? `sal['OvertimePay'].max()`
+* What is the job title of JOSEPH DRISCOLL ? `sal[sal['EmployeeName']=='JOSEPH DRISCOLL']['JobTitle']`
+* How much does JOSEPH DRISCOLL make (including benefits)? sal[sal['EmployeeName']=='JOSEPH DRISCOLL']['TotalPayBenefits']`
+* What is the name of highest paid person (including benefits)? sal[sal['TotalPayBenefits'] == max(sal['TotalPayBenefits'])]`
+* What is the name of lowest paid person (including benefits)? Do you notice something strange about how much he or she is paid? `sal[sal['TotalPayBenefits'] == min(sal['TotalPayBenefits'])]`
