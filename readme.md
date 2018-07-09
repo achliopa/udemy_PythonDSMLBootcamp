@@ -567,3 +567,69 @@ axes[1].plot(x,y)
 * factorplots take x and y argument and dataset and the kind of plot we want. eg. kind="bar" for barplot `sns.factorplot(x='sex',y='total_bill',data=tips,kind='bar')`
 
 ### Lecture 49 - Matrix Plots
+
+* we load 2 built-in datasets from seaborn tips and flights
+```
+flights = sns.load_dataset('flights')
+tips = sns.load_dataset('tips')
+```
+* we will look into heatmap plot. in order to work properly our data should be in matrix form (index name and column name match up) so that the cell value shows somthing relevant to both names. 
+* so in tips dataset our columns are labeled but the rows not. in order to make it in matrix form our index should have label relevant to the cell. this is done by applying pivot or correlation transformation to the dataset. `tc = tips.corr()` now both rows and columns are labeled
+* with data in matrix form i just have to call `sns.heatmap(tc)`. heatmap color values based on gradient scale. we can set the scale with cmap param *cmap="coolwarm"* we can annotate the plot with param *annot=True* this overlays the values on the tiles
+* we want to transform the flights dataset  so that index is the month, column the year and datavalues the passengers. we use pivot `flights.pivot_table(index="month",columns='year',values="passengers")`. we get it in matrix form so we can show it in heatmap plot. we can also set linecolor and linewidth params to seperate cells in heatmap
+* we also have clustermap matrix plot which is also applied on matrix data sets `snsclustermap(tc)`
+* cluster map has hierarchical clusters clustering rows and columns together based on their similarity. this breaks the original order of data but still contains valid representations. Clustermap searches Similarities
+* we can change the representation by normalizing data changing the scale `sns.clustermap(pvflights,cmap='coolwarm',standard_scale=1)` adding a standard_scale param (1 is 0-1 stale)
+
+### Lecture 50 - Grids
+
+* we again import seaborn and se matplotlib inline
+* we use the inbuilt iris dataset `iris = sns.load_dataset('iris')`
+* it contains measurements of different flowers and species has categorical data of 3 distinct values
+* we plot the pairplot with `sns.pairplot(iris)` (grid of scatterplots of numericalvalues seen before)
+* another plot is PairGrid. with `g = sns.PairGrid(iris)` we print only the grid
+* pairplot is a simplyfied version of PairGrid. PairGrid needs tweaking but gives more flexibility. to mat a scatterplot on the pairgrid we need to import matplotlib, set the grid (passing the dataset) and the on it map the scatter
+```
+import matplotlib.pyplot as plt
+g = sns.PairGrid(iris)
+g.map(plt.scatter)
+```
+* this produces a grid of scatterplots. its like pairplot. only that its missing the histograms along the axes (it has scatters)
+* with PairGrid we have control on the plots we will show on the grid
+```
+g.map_diag(sns.distplot) # distplot (histogram) on thediagonal
+g.map_upper(plt.scatter) # scatterplot on upper half of grid
+g.map_lower(sns.kdeplot) # kde plot on the lower half
+```
+* for facet grid plot we will use the tips dataset `tips = sns.load_dataset('tips`)
+* for facet grid we specify the data the column and the row like sublplots in matplotlib `g = sns.FacetGrid(data=tips,col='time',row='smoker')`. the expression produces an empty grid (2 by 2)
+* on the grid we do `g.map(sns.distplot,'total_bill')`
+* this shows a distplot on each grid cell with the distribution of total_bill on the 4 cases defined by the combination of the 2 category types of each dataset column we chose (time and smoker)
+* the data we pass is subplot dependent. so for scatter we need two arrays `g = g.map(plt.scatter, "total_bill", "tip")`
+
+### Lecture 51 - Regression Plots
+
+* we import seaborn, set matplotlib inline and load the tips inbuilt dataset
+* we use lmplot for linear regression. we set the feat we want on the x axis and the y axis  `sns.lmplot(x='total_bill',y='tip',data=tips)` what we get is a scatterplot witha linear fit on top. we can spec hue based on sex (we get 2 scatterplots and 2 linear fits on top of each other). we can even set different markers for our hue categories using the parameter *markers=['o','v']* to control the markers size we use *scatter_kws={'s':100})*
+* so seaborn uses matlibplot under the hood and with scatter_kws we control the scatterplot of matplotlib passing the dictionary s is size (see documentation)
+* instead of separating categories by hue we can use grid `sns.lmplot(x='total_bill',y='tip',data=tips,col='sex')` by passing the col parameter. we can add a row param for an other category (like facet grid but simpler)
+* we can combine grid and hue
+* size and aspect ratio is adjustable in seaborn with *aspect=0.6,size=8* params
+
+### Lecture 52 - Style and Color
+
+* we import seaborn, se matplotlib inline and load the tips dataset from seaborn
+* we do a simple plot `sns.countplot(x='sex',tips)`
+* seaborn has a set_style method to set the style for all our plots `sns.set_style('white')` darkgrid, whitegrid, ticks etc are acceptable values
+* we can remove spines `sns.despine()` the top and right. we can remove bottom and left by specifying it `sns.despine(left=True)`
+* we can control the size and aspect ration by specifying it
+* in a non grid plot we can pec it in the matplotlib figure like we have seen `plt.figure(figsize=(12,3))` before our actual plot
+* in grid pplots we do it in seaborn `sns.lmplot(x='total_bill',y='tip',size=2,aspect=4,data=tips)`
+* we can set the context with `sns.set_context('poster'.font_size=4)` with poster we get a much largez size suitable to be put on a poster, default is notebook
+* coloring can be controled with palette parameter. [possible values](https://matplotlib.org/examples/color/colormaps_reference.html)
+
+### Lecture 53 - Seaborn Exercise
+
+* we work with the titanic dataset
+
+## Section 10 - Python for Data Visualization - Pandas Built-in Data Visualization
