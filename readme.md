@@ -418,3 +418,122 @@ ecom['Purchase Price'].min()
 * Hard: How many people have a credit card that expires in 2025? ` sum(ecom['CC Exp Date'].apply(lambda x: x[3:]=='25))`
 * Hard: What are the top 5 most popular email providers/hosts (e.g. gmail.com, yahoo.com, etc...) `ecom['Email'].str.split('@',1,expand=True)[1].value_counts().head(5)` other solution `ecom['Email].apply(lambda email: email.split('@')[1]).value_counts().head(5)`
 * to get column names `df.columns`
+
+## Section 8 - Python for Data Visualization - Matplotlib
+
+### Lecture 40 - Introduction to [Matplotlib](https://matplotlib.org/)
+
+* most popular plotting library for Python
+* it gives vontrol ofer every aspect of a figure
+* designed to give Matlab plotting look and feel
+* works well with pandas and numpy
+* to install it `conda install matplotlib` or `pip install matplotlib`
+* in project site => examples we can see examples of the plots with code examples
+
+### Lecture 41 - Matplotlib Part 1
+
+* we import matplotlib `import matplotlib.pyplot as plt`
+* to use it efficiently in jupyter we need to enter `%matplotlib inline`. this will allow us to see our plots as we write them in notebook
+* if we dont use jupyter after our code we need to enter `plt.show()` before executing it
+* we will use numpy for our first example 
+```
+import numpy as np
+x = np.linspace(0,5,11)
+y = x**2
+```
+* there are 2 ways to create plots, functional and object oriented
+```
+# Functional
+plt.plot(x,y) # shows the plot
+```
+* `plt.show()` in jupyter prints the plot
+* we can add matlab style arguments like color and style `plt.plot(x,y,'r--')` for red and dashed
+* if we want to add labels we use `plt.xlabel('my labbel')` or `plt.ylabel('my labbel')`
+* for plot title `plt.title('My title')`
+* we can create multiplots in the same canvas using the subplot method subplot takes 3 arguments: num of rows, num of columns, and the plot num we refer to
+```
+plt.subplot(1,2,1)
+plt.plot(x,y,'r')
+plt.subplot(1,2,2)
+plt.plot(y,x,'b')
+```
+* we will now have alook at the OO method: we create figure objects and call methods on them
+```
+fig = plt.figure() # creates afigure object like a cnavas
+axes = fig.add_axes([0.1,0.1,0.8,0.8])
+```
+* we add axis with a method passing a list of axis. the list takes 4 args: left, bottom, width and height arg, which take a val from 0 - 1 (represent percentage of screen) left and bottom are coordinates and wight and height size
+* we then plot on the axes to see the plot in our set of axes `axes.plot(x,y)`. the plot is the same as before but in an OO approach
+* we can put labels like before on the set of axes
+```
+axes.set_xlabel('Set X Label') # Notice the use of set_ to begin methods
+axes.set_ylabel('Set y Label')
+axes.set_title('Set Title')
+```
+* we will put 2 sets of figures on the same canvas using OO
+```
+fig = plt.figure()
+axes1 = fig.add_axes([0.1,0.1,0.8,0.8]) # for first plot
+axes2 = fig.add_axes([0.2,0.4,0.4,0.3]) # for second plot
+```
+* the plots are overlayed one over other as the axes are overlapping
+* we plot on the axes and the advantage of OO approach becomes apparent
+```
+axes1.plot(x,y)
+axes2.plot(y,x)
+```
+
+### Lecture 42 - Matplotlib Part 2
+
+* we will create subplots using OO `fig, axes = plt.subplots()`
+* by using `axes.plot(x,y` we get a plot like before
+* with subplots we can specify rows and columns `fig, axes = plt.subplots(nroows=1,ncols=2)`, now we have two empty canavases to apply our plots as 2 columns. 
+* so subplot manages the axes automaticaly. the fig,axes syntax is tuple unpacking
+* axes is actually an array of two (1 per subplot). we can iterate through it or index it
+```
+for current_ax in axes:
+	current_ax.plot(x,y)
+# OR INDEX EQUIVALENT
+axes[0].plot(x,y)
+axes[1].plot(x,y)
+```
+* each axes element is an object where we can call the methods we have seen before
+* at the end of the plot statements (especially when we use subplots) we should use `plt.tight_layout()`
+* We will now see figure size, aspect ratio and DPI. matplotlib allows control over them
+* we can control figure size, dpi `fig = plt.figure(figsize=(3,2),dpi=100)` usually we dont set dpi (analysis) in jupyter. the tuple we put in figsize is (inches_width,inches_height). we can set the figsize to subplots
+* to save a figure to a file we use savefig `fig.savefig('mu_pickture.jpg`,dpi=200) . the filename defines the file format
+* we can add legends to our plots to clarify the plot. we do it by adding `axes.legend()` as last statement wehre axes are defined
+* for this to work we need to add a label argument to our plots `axes.plot(x,y,label='X in power of 2')`
+* we can position the legend passing a param in legend() e.g axes.legend(loc=0) aka best position or passing a tuple for bottom left postiion in % (0 to 1)
+
+### Lecture 43 - Matplotlib Part 3
+
+* seting colors in plot. we pass them as argument colors in plot as strings . they are cpecked as literals or RGB hex e.g `ax.plot(x,y,color="green")` or `ax.plot(x,y,color="#FF00FF')`
+* we can set plot line width (in px) or line style `ax.plot(x,y,linewidth=20)`  or `ax.plot(x,y,lw=20)`. we can also control the a (transparency) `ax.plot(x,y,alpha=0.5)`
+* linestyle is again passed as param `linestyle="--"` or `ls="--"` or ":" or "steps" or ...
+*  markers are used when we have a few datapoints. we set them as argumetns in plot `ax.plot(x,y,marker="*")` or any other mark we want. we can set their marakersize with the plot argument`marakersize=13` or any int
+* we can customize markers further with `markerfacecolor="yellow", markeredgewidth=3,markeredgecolor="green"`
+* we can limit the x and y in our plots `axes.set_xlim([0,1])` passing lower bound and upper bound or ylim limiting the axis in real values
+* matplotlib supports a lot of plot types (see links and [tutorial](http://www.labri.fr/perso/nrougier/teaching/matplotlib/))
+* advanced topics avaialble as a bonus notebook
+
+### Lecture 44 - Matplotlib Exercises
+
+* all commands on a plot must be in one cell
+
+## Section 9 - Python for Data Visualization - Seaborn
+
+### Lecture 46 - Introduction to [Seaborn](https://seaborn.pydata.org/)
+
+* seaborn is a statistical ploting library with beautiful default styles
+* works very well with panda dataframe objects
+* we install it with `conda install seaborn` or `pip install seaborn`
+* there are many examples in docs site
+
+### Lecture 47 - Distribution Plots
+
+* we will analyze distribyution of a dataset
+* we import seaborn `import seaborn as sns`
+* we set matplotlib as inline (seaborn use it) `%matplotlib inline`
+* seaborn comes with inbuilt datasets for testing `tips = sns.load_dataset('tips')` tips is one of them a simple dataframe about tips
+* for distplot we pass a single column of our dataframe. it shows uniform distribution `sns.distplot(tips['total_bill'])` we get a histogram and a KDE (kernel density estimation or probability density function of a random variable)
