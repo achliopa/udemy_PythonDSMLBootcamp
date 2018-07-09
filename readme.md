@@ -537,3 +537,33 @@ axes[1].plot(x,y)
 * we set matplotlib as inline (seaborn use it) `%matplotlib inline`
 * seaborn comes with inbuilt datasets for testing `tips = sns.load_dataset('tips')` tips is one of them a simple dataframe about tips
 * for distplot we pass a single column of our dataframe. it shows uniform distribution `sns.distplot(tips['total_bill'])` we get a histogram and a KDE (kernel density estimation or probability density function of a random variable)
+* we can remove the kde and keep only th histogram by setting it to false `sns.distplot(tips['total_bill'],kde=False)`
+* the histogram is a distribution chart which shows where our values lay on the value min max range. the x range is split into areas or bins and the y axis is a count, we can change the number of bins `sns.distplot(tips['total_bill'],kde=False,bins=30)` . if our bins value is too high we plot each value
+* jointplot allow us to match two distplots of bivarial data, we pass an x variable and ay variable and our dataset(dataframe), usually x and y are column labels `sns.jointplot(x='total_bill',y='tip',data=tips)`
+* what we get is 2 distplots on each axis and a scaterplot to show the correlation, when bill is higher tip is higher also
+* in jointplot we can set an addional paramter called kind `sns.jointplot(x='total_bill',y='tip',data=tips,kind='scatter')` the default is scatter. we  can use hex instead to get a hexagon distribution representation (more points, darker color)
+* we can also set *kind="reg"* which gives a scatterplot with a regression line overlaid (linear regression) like a linear fit. we can also put *kind="kde"* to get a 2D KDE plot showing the density
+* pairplot shows pairlike relationships within an entire dataset(dataframe). it also supports a color hue param for categorical data. what pairplot does is essential every possible combination of jointplots in a datasets numerical values `sns.pairplot(tips)`. 
+* when doing a plot of the same column it shows a histogram instead the rest is scatterplot
+* if we add the param hue="sex" we get colored plot showing the 2 different categories of sex with different color. this is a great way to add in the mix non numeral categorical data (passing their column label)
+* we can choose a palette for hue `sns.pairplot(tips,hue='sex',palette='coolwarm')`
+* next plot we look at is rugplot. in rugplot we pass a single column `sns.rugplot(tips["total_bill"])`. rugplot plot 1 dash for every datapoint in the column with the x axis being the value range.dash stack on each other. the distplot counts the values adding them to bins. the rugplot shows a density like representation of the datapoints
+* so how we build the kde plot from rugplot? kde stands for Kernel Density Estimation plot. from rugplot and datapoints gaussian (normal) distributions are calculated. their sum is the KDE plot
+* in an example we make a random data dataset =>  make a rugplot of them => set axis for the plot => use linspace to split the axis => plot a normal distribution for all the rugplot points => we sum them up to get the kde plot
+
+### Lecture 48 - Categorical Plots
+
+* we again import seaborn and set matplotlib inline
+* in these plots we are interested in the distribution of categorical data
+* we start with barplot, where we aggregate categorical data based on some function (default is mean) `sns.barplot(x=,y=.data=tips)` we again set the x axis the y axis and the dataset. usually x is the categorical column label e.g "sex" and for y we choose a column that is numeric e.g "total_bill". what we get a sdefault is 2 bars with the mean or average total bill value for male and female customers.
+* we can add an other aggregate function instead of the default with specifying the estimator parameter `sns.barplot(x='sex',y='total_bill',data=tips,estimator=np.std)` for standard deviation. we can use a custom function of our own
+* a countplot in seaborn is a barplot where in the y axis we have the counter of occurences of each category in the dataset `sns.countplot(x='sex',data=tips)`
+* boxplot (or box and wisker plot) is used to show the distribution of categorical data. again we set x, y and data param like boxplot `sns.boxplot(x="day", y="total_bill", data=tips)`. boxplot shows boxes for quartile of distribution. the wiskers show the rest of the distribution while the dots outside outliers. if we add a hue as parameter passing another categorical column label our boxplot is split showing boxplots for each category of hue. hue is excellent ofn adding insight in analysis
+* violiplot also shows distribution of categorical data, arguments are exactly like boxplot `sns.violinplot(x="day", y="total_bill", data=tips)`. violinplot allows plotting of all datapoints in the dataset in a continuous diagram showing the kde of the underline distribution. its harder to read, violinplot also accepts hue param. one cool effect is that with hue and with split=True in violi plot we get per violit plot both hues one per side (as the original is symmetrical on y axis) `sns.violinplot(x="day", y="total_bill", data=tips,hue='sex',split=True)`
+* a stripplot is a scatterplot of categorical data. the basic params are same as the other ones `sns.stripplot(x="day", y="total_bill", data=tips)`. with this plot we cannot tell how many points stack on each other. we can use jitter param for this *jitter=True* which makes the line thicker to show all points. again hue is supported and split
+* the idea of stripplot and violinplot is combined in swarmplot. its as triplot where poitns are stackedvertically  so that they dont overlap giving the violin shape. params are the same `sns.swarmplot(x="day", y="total_bill", data=tips)`
+* swarmplots do not scale well for large numbers(too wide). 
+* we can stack a swarmplot on a violin plot to show where the kdes came from
+* factorplots take x and y argument and dataset and the kind of plot we want. eg. kind="bar" for barplot `sns.factorplot(x='sex',y='total_bill',data=tips,kind='bar')`
+
+### Lecture 49 - Matrix Plots
