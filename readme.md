@@ -904,4 +904,27 @@ layout = dict(
 
 ### Lecture 78 - Linear Regression Theory
 
+* Linear REgression was devloped in 19th century by Francis Galton. 
+* He was investigatiing the relationship between heights of fathers and sons
+* He discovered that a mans son tended to be roughly as tall as his father.
+* By he found that the sons height tended to be closer to the overall average of all people
+* This phenomens was called regression, as a sons height regress (drifts towards) the mean average height
+* all we are trying to do when we calculate the regression line is to draw a line that as close to every fdot in the dataset as possible.
+* for classic linear regression (Least Squares Method) we measure the closeness in the 'up and down' direction
+* we apply the same concept to multiple points
+* THe goal in linear regression is to minimize the vertical distance between all the data points and our line.
+* So to determine the best line we attempt to minimize the distance between all the points and their distance to the line
+* there are many ways to do it (sum of squared errors, sum of absolute errors etc) but all these methods have a general goal of minimizing the distance
+* the most common methods is least squares method (minimize the sum of squares of the residues)
+* the residuals for an observation is the difference between the observation (y-val) and the  fitted line
+
+### Lecture 80 - Linear Regression with Python Part 1
+
+* we import split as `from sklearn.model_selection import train_test_split`
+* we will start off by working with a housing data set trying to create a model to predict housing proces based off of existing features
+* to ease our process we will work with artificially created datasets,
+* latar on we will use real data sets from kaggle
+* we import pandas, numpy pyplot from matplotlib, seaborn and set matplotlib inline
+* we load our csv to a dataframe `df = pd.read_csv('USA_Housing.csv')`
+* we have averaged values. area income, age,roums,bedrooms,population and the price
 * 
