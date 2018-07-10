@@ -674,7 +674,16 @@ df.plot.hexbin(x='a',y='b',gridsize=25,cmap='Oranges')
 * [Plotly](https://plot.ly/) is an interactive visualization library
 * [Cufflinks](https://github.com/santosjorge/cufflinks) connects plotly with pandas
 * we need to install the libs `pip install plotly` and `pip install cufflinks` not available in conda
-
+* we create a virtual env `conda create -n plotly plotly`
+* we activate it `source activate plotly`
+* we install cufflinks in it `pip install cufflinks`
+* we install numpy `conda install -n plotly numpy`
+* we install pandas `conda install -n plotly pandas`
+* we install matplotlib `conda install -n plotly  matplotlib`
+* we install seaborn `conda install -n plotly seaborn`
+* we run `anaconda-navigator` from it
+* we select our new environment in navigator
+* we install notebook in it
 
 ### Lecture 59 - Plotly and Cufflinks
 
@@ -718,4 +727,83 @@ print(__version__)
 
 * we should keep the notebook of the course as refrence as chloropleths are difficult to master
 * we import plotly `import plotly.plotly as py`
+* we import plotly libs `from plotly.offline import download_plotlyjs,init_notebook_mode,plot,iplot`
+* we set noteboom mode `init_notebook_mode(connected=True)`
+* we start by setting our configuration object as a dictionary `data = dict(type='cloropleth`,locations=['AZ','CA','NY'], locationmode='USA-states',colorscale="Portland",text=['text 1','text 2','text 3'], z = [1.0 ,2.0 ,3.0],colorbar={'title':'Colorbar Title'})`. text is the text shown when we hover over the area , z are the actual values, colorscale is the colorscale we use, colorbar sets configfor colorscale legend (title), locations are a way to identify the areas on the colorpleth (standardized) and the locationmode is the type of map
+* next we create the layout as a dictionary passing the map scope. `layout = dict(geo = { 'scope':'usa'})`
+* we neer to import the geo  library from plotly to plot our cloropleth `import plotly.graph_objs as go`
+* we use the FIgure method (constructor) from go to instantiate our choropleth `choromap = go.Figure(data=[data],layout = layout)` note we pass data dictionary in an array
+* we plot with `iplot(choromap)` we can plot a non-interactive map for printing with `plot(choromap)`
+* for choropleth we plot a Figure that uses two objects . data and layout both dictionaries
+* in data type sets the type of plor. locations and location mode are interlinked to identify areas. text z and locations have 1:1 relationship within them
+* we will use real data this time `df = pd.read_csv('2011_US_AGRI_Exports')`
+* we set our data dict using columns from dataframe
+* we also add a new argument. a marker as a nested dictionary seting its line as a nested dicxtionary
+```
+data = dict(type='choropleth',
+            colorscale = 'YIOrRd',
+            locations = df['code'],
+            z = df['total exports'],
+            locationmode = 'USA-states',
+            text = df['text'],
+            marker = dict(line = dict(color = 'rgb(255,255,255)',width = 2)),
+            colorbar = {'title':"Millions USD"}
+            ) 
+```
+* we set the layout passing a title we also set the lakes?!
+```
+layout = dict(title = '2011 US Agriculture Exports by State',
+              geo = dict(scope='usa',
+                         showlakes = True,
+                         lakecolor = 'rgb(85,173,240)')
+             )
+```
+* we then instantiate the figure and plot it
+* the marker sets a line between states
+
+### Lecture 62 - Choropleth Maps: Part 2 World
+
+* we load a new dataset `df = pd.read_csv('2014_World_GDP')`
+* we set the data config dictioanary
+```
+data = dict(
+        type = 'choropleth',
+        locations = df['CODE'],
+        z = df['GDP (BILLIONS)'],
+        text = df['COUNTRY'],
+        colorbar = {'title' : 'GDP Billions US'},
+      ) 
+```
+* there is no location mode (only countries) using international CODE. we again use columns from df
+* we set the layout setting the geo in a new way
+```
+layout = dict(
+    title = '2014 Global GDP',
+    geo = dict(
+        showframe = False,
+        projection = {'type':'Mercator'}
+    )
+)
+```
+* we set the figure and plot
+* see [docs](https://plot.ly/python/choropleth-maps/) for more 
+* with choropleth we need our dataset to contain the countrcodes or statecodes it understands
+
+### lecture 63 - Choropleth Maps Excercises
+
+* we can set `locationmode="country names",` to use full country names
+* we can set reversescale=True to reverse color scale
+
+## Section 13 - Data Capstone Project
+
+### Lecture 66 - 911 Calls Project
+
+* convert column from string to timestamp `df['timeStamp'] = pd.to_datetime(df['timeStamp'])`
+
+### Lecture 69 - Finance Data Project
+
+## Section 14 - Introduction to Machine Learning
+
+### Lecture 76 - Introduction to Machine Learning
+
 * 
