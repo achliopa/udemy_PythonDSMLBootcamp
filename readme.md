@@ -633,3 +633,89 @@ g.map_lower(sns.kdeplot) # kde plot on the lower half
 * we work with the titanic dataset
 
 ## Section 10 - Python for Data Visualization - Pandas Built-in Data Visualization
+
+### Lecture 55 - Pandas Built-In Visualization
+
+* we import numpy and pandas in our notebook and set natplotlib as inline
+* we upload 2 csv files using pandas 
+```
+df1 = pd.read_csv('df1',index_col=0) # remove index column (the imported dataframe has as index dates)
+df2 = pd.read_csv('df2')
+```
+* say we want a *histogram* of all the values in a column of df1. pandas can do it with `df1['A'].hist()`. it calls matplotlib under the hood. like seaborn we can set the number of bins in the histogram as a param *bins=*
+* if we dont like the style we can import seaborn in our notebook and the pandas plots are styled like seaborn
+* pandas have several inbuilt plots. all of them are called as methods on the dataframe
+* we can use the general method plot specifying the kind of plot + params `df1['A'].plot(kind='hist',bins=30)`
+* another way is to chain plot ype as method `df['A'].plot.hist(bins=30)`
+* we can have an *areaplot* of multiple num columns in a dataframe, even the entire dataframe `df2.plot.area()`, we add transpoarency specifying alpha as a param (0 -1 value) *alpha=0.4*
+* also we can have a *barplot* `df2.plot.bar()` of all rows (indexes). we can hacve a *stacked* barplot passing the parameter *stacked=True*
+* histograms are most use in pandas builtin
+* *lineplot* is also available. we need to specify the x and y axis for this `df1.plot.line(x=df1.index,y='B')`
+* we can use matplotlib arguments to control the appearance *figsize=(12,3)* or lw markers etc
+* we can do *scatterplots* with pandas. `df1.plot.scatter(x='A',y='B')` we can set color dependent on another column with *c='C'*. we can set cmap as well like in seaborn. instead of color we can set dor size dependent on a COlumns values with *s=df1['C']*200* passing a factor to multiply size
+* we can do a *boxplot* of a dataframe with `df2.plot.box()`
+* he can ddo hexbin plots. passing x and y columns. we use a bigdtaset dfor this, we can multiply the hex size fy a factor
+```
+df = pd.DataFrame(np.random.randn(1000, 2), columns=['a', 'b'])
+df.plot.hexbin(x='a',y='b',gridsize=25,cmap='Oranges')
+```
+* we can also do *kdeplots* with `df['a'].plot.kde()` od density plots `df2.plot.density()` which is the same thing
+
+### Lecture 56 - Pandas Data Visualization Exercise
+
+* we can limit the ampount of indexed we feed in a plot with ix[:max] `df3.ix[:30].plot.area()`
+* we can print legend outside of plot with `plt.legend(loc='center left', bbox_to_anchor=(1.0, 0.5))`
+
+## Section 11 - Python for Data Visualization - Plotly and Cufflinks
+
+### Lecture 58 - Introduction to Plotly and Cufflinks
+
+* plotly and cufflinks allow us to create interactive visualizations
+* [Plotly](https://plot.ly/) is an interactive visualization library
+* [Cufflinks](https://github.com/santosjorge/cufflinks) connects plotly with pandas
+* we need to install the libs `pip install plotly` and `pip install cufflinks` not available in conda
+
+
+### Lecture 59 - Plotly and Cufflinks
+
+* we import numpy and pandas and set matplotlib inline
+* we check the plotly version
+```
+from plotly import __version__
+print(__version__)
+```
+* we need a version > 1/9
+* we import cufflinks `import cufflinks as cf`
+* we import plotly libs `from plotly.offline import download_plotlyjs, init_notebook_mode,plot,iplot`
+* `init_notebook_mode(connected=True)` connects javascript to our notebook, as plotly connects pandas and python to an interactive JS library
+* `cf.go_offline()` to tell cufflinks to work offline
+* we get some data for our plots `df = pd.DataFrame(np.random.randn(100,4),columns='A B C D'.split())`
+* we createa sceond dataframe using a dictionary `df2 = pd.DataFrame({'Category':['A','B','C'],'Values':[32,43,50]})`
+* if we write `df.plot()` pandas plots a matplotlib plot (a line plot with hue for each column)
+* if insteat we use iplot `df.iplot()` we get the same plot but from plotly. and is interactive, we can zoom pan, use tools
+* we can use iplot for a scatterplot specifing kind="scatter" and defining the 2 axes by col name `df.iplot(kind="scatter,x="A",y="B")` this is a line scatterplot!?! .. we fix that by adding param *mode="markers"*, we can also affect size of marks with *size=*
+* we do a barplot on df wher x is a categorical column (Category) and y anumerical column (Values) `df2.iplot(kind="bar", x="Category",y="Values")`
+* we can use grpup by or perform aggregate funtions on our dataframe to bring it to a form where we can plot it. `df.sum().iplot(kind="bar")`
+* for boxplots `df.iplot(kind="box")`
+* we can do 3d surface plot using a new dataframe `df3=pd.DataFrame('x':[1,2,3,4,5],'y':[10,20,30,40,50],'z':[100,200,300,400,500])`
+* we plot the surface plot with `df3.iplot(kind="surface")` ce can set a colorscale with *colorscale="rdylby"*
+* we can do histogram plots `df['A'].iplot(kind='hist',bins=345)` . if we pass al the dataframe we get overlapping histogram of all columns
+* we can use spread type visualization (for stock analysis) df['A','B'].iplot(kind="spread"). we get a linechart and a spread (area PLOT) beneath
+* we can use bubblieplot (like a spreadplot but size of marks show a value) so we specify the column for size `df.iplot(kind="bubble",x="A",y="B",size="C")` popular in UN reports
+* scatter matrix is like a seaborn pairplot. is is applied on a datafram `df.scatter_matix()`
+* cufflinks can do technical analysis plots for financial (beta)
+
+## Section 12 - Python for Data Visualization - Geographical Plotting
+
+### Lecture 60 - Introduction to Geographical Plotting
+
+* geo plotting is difficult due to the various formats the data can come in
+* we will focus on using plotly for plotting
+* matplotlib has also a basemap extension
+* usualy the dataset determines the library we will use
+
+### Lecture 61 - Chloropleth Maps: Part 1 USA
+
+* we should keep the notebook of the course as refrence as chloropleths are difficult to master
+* we import plotly `import plotly.plotly as py`
+* 
