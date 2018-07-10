@@ -806,4 +806,102 @@ layout = dict(
 
 ### Lecture 76 - Introduction to Machine Learning
 
+* we will use the [ISLR book](http://www-bcf.usc.edu/~gareth/ISL/ISLR%20Sixth%20Printing.pdf) from Gareth James as reading assignment
+* Statistical Learning is another name for Machine Learning
+* this book will be used as mathematical reference. the code in the book is in R
+* THe book is a reference if we want to dive into the mathematics behind the theory
+* Reading is optional
+* machine learning is a method of data analysis that automates analytical model building
+* using algorithms that iteratively learn from data machine learning allows computers to find hidden insights without beign explicitly programmed where to look
+* Machine Learning is used in:
+	* Fraud detection
+	* Web search results
+	* Real-time ads on web-pages
+	* Credit scoring and next-best offers
+	* Prediction of equipment failures
+	* New pricing models
+	* Network intrusion detection
+	* Recommendation Engines
+	* Customer Segmentation
+	* Pattern and Image Recognition
+	* Financial Modeling
+* The Machine Learning Process is the Following: Data Acquisition -> Data Cleaning -> [ Model Training & Building <-> Model Testing] || [Test Data -> Model Testing] -> Model Deployment
+*  To clean the data we can use Pandas.
+*  Clean Data are Split into Training Data and Test Data
+*  we train our machine learing model on the training data
+* we test our model on the test data
+* we tune our model until testing on test data gives good results
+* then we deploy our model
+* There are 3 main types of Machine Learning algorithms
+	* *Supervised Learning:* we have labeled data and try to predict a label based on known features
+	* *Unsupervised Learning:* We have unlabeled data and we are trying to group together similar data points based off of features
+	* *Reinforcement Learning:* Algorithm learn to perform an action from experience
+* Supervised learning:
+	* algorithms are trained using *labeled* examples, like an input where the desired output is known e.g a piece of equipment could have datapoints labeled either F (failed) or R (runs). 
+	* The learning algorithm receives a set of inputs along with the corresponding correct outputs. 
+	* The algorithm learns by comparing its actual output with correct outputs to find errors. it then modifies the model accordingly
+	* through methods like classification, regression, prediction and gradient boosting, supervised learning uses patterns to predict the values of the label on additional unlabled data
+	* Supervised learning is commonly used in applications where historical data predicts likely future events
+	* e.g it can anticipate when credit card transactions are likely to be fraudulent or which isurance customer is likely to file a claim
+	* it can predict the price of a house based on different features for houses for which we have historical price data
+* Unsupervised Learning:
+	* is used against data that has no historical labels
+	* the system is not told the 'right answer' The algorithm must figure out what is being shown
+	* the goal is to explore the data and find some structure within it
+	* or it can find the main attributes that separate customer segments from each other
+	* popular techniques include: self-organizing maps, nearest-neighbour mapping, k-means clustering and singular value decomposition
+	* these algotruthms are also used to segment text topics recommend items and identify data outliers
+* Reinforcement Learnign:
+	* is often used for robotics, gaming and navigation
+	* with reinforcemnt learing, the algorithm discovers through trial and error which actions yield the greatest rewards
+	* this type of learning has three primary components: the agent(the learner or decision maker), the environment (everything the agent interacts with) and actions (what the agent can do)
+	* the objective is for the agent to choose actions that maximize the expected reward over a given amountof time
+	* the agent will reach the goal much faster by following a good policy
+	* the goal in reinforced learning is to learn the best policy
+* Each Algorithm or ML topic in this course includes:
+	* A reading assignment
+	* light overview of theory
+	* demonstration lecture using python
+	* ML project assignment
+	* Overview of Solution for Project
+
+* Disclaimer: Machine Learning is Hard to Learn: Take your Time, Be patient
+
+### Lecture 77 - Machine Learning w/ Python
+
+* We will use the SciKit ML learning package. it's the most popular machine learning package for Python and has a lot of algorithms built-in
+* we need to install it. using `conda install scikit-learn` or `pip install scikit-learn`
+* we will install it in our plotly env `conda install -n plotly scikit-learn`
+* in sccikit-learn every algorithm is exposed via an *Estimator*
+* first we import the Model: `from sklearn.family import Model` for example for Linear Regression `from sklearn.linear_model import LiearRegression` 
+* the second step is to instantiate the Model
+* *Estimator parameters:* all the parameters of an estimator can be set when it is instantiated, and have suitable default values. we can see the possible params in Jupyter with shift+tab
+* for example we can instantate the Linear Regresion estimator with: `model = LinearRegression(normalize=True)` setting the normalize param to True. if we print the instance `print(model)` we see all the default params of the model instance `LinearRegression(copy_X=True, fit_intercept=True, normalize=True)`
+* once we have our model created with the desired params, we can fit it on some data
+* but this data must be split in two sets (training set and test set)
+* we import numpy for datasets `import numpy as np`
+* we import train test split from scikit 	`from sklearn.cross_validation import train_test_split`
+* we then create our dataset and a set of labels `X, y = np.arange(10).reshape((5,2)), range(5)`
+* we split our data `X_train,X_test,y_train,y_test = train_test_split(X,y,test_size=0.3)` which splits our data in a 3 to 2 ratio and randomizes the order
+* with the data split, we can train/fit our model on the trianing data
+* this is done with the model.fit() method `model.fit(X_train,y_train)`
+* now the model has been fit and trained on the training data
+* the model is ready to predict labels or values on the test set!
+* the proces we follow is a SUPERVISED LEARNOING process, in unsupervised we dont have the labels
+* we get the predictions with `predictions = model.predict(X_test)`
+* we can evaluate our model by comparing our predictions to the correct values (y_test)
+* the evaluation method depends on the the kind of machine learing algorithm we use (e.g Regression, Classification, Clustering etc)
+* On all Estimators the model.fit() method is available. for supervised learning applications it accepts 2 arguments, data X and labels y e.g model.fit(X,y)
+* For unsupervised learning apps, this accepts only a single argument the data X
+* In All Supervised Estimators we have a model.predict() method: given a trained model , predict the label oif a new set of data, this method accepts one argument the test data X_test and returns a learned label for each object in the array
+* for some supervised estimators the model.predict_proba() method is available. it is used for classification problems and returns the probability that a new observaTION has each categorical label. in this case the label with the highest probability is returned by model.predict()
+* model.score() is offered for classificsation or regression problems. as most estimators implement a score method. scores are between 0 and 1. a larger score indicates a better fit
+* model.predict() is also available in unsupervised estimators to predict labels in clustering algorithms
+* model.transform() is available in unsupervised estimators: given an unsupervized (trained) model, transfor,s new data 9test data) in teh the new basis. it accepts X_new and returns the new representation of the data based on the unsupervised model.
+* some unsupervised estimators implement the model.fit_transform() method which more efficiently performs a fit and a transform on the same input data
+
+## Section 15 - Linear Regression
+
+### Lecture 78 - Linear Regression Theory
+
 * 
