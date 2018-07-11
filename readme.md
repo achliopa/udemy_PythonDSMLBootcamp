@@ -799,8 +799,90 @@ layout = dict(
 ### Lecture 66 - 911 Calls Project
 
 * convert column from string to timestamp `df['timeStamp'] = pd.to_datetime(df['timeStamp'])`
-
+* What are the top 5 zipcodes for 911 calls?  `df['zip'].value_counts().head(5)`
+* What are the top 5 townships (twp) for 911 calls? `df['twp'].value_counts().head(5)`
+* Take a look at the 'title' column, how many unique title codes are there? `df['title'].unique().shape[0]`
+* In the titles column there are "Reasons/Departments" specified before the title code. These are EMS, Fire, and Traffic. Use .apply() with a custom lambda expression to create a new column called "Reason" that contains this string value. `df['Reason'] = df['title'].apply(lambda x: x.split(':')[0])`
+* What is the most common Reason for a 911 call based off of this new column? `df['Reason'].value_counts()`
+* Now use seaborn to create a countplot of 911 calls by Reason. `sns.countplot(x='Reason',data=df)`
+* You should have seen that these timestamps are still strings. Use pd.to_datetime to convert the column from strings to DateTime objects. `df['timeStamp'] = pd.to_datetime(df['timeStamp'])`
+* You can use Jupyter's tab method to explore the various attributes you can call. Now that the timestamp column are actually DateTime objects, use .apply() to create 3 new columns called Hour, Month, and Day of Week. You will create these columns based off of the timeStamp column, reference the solutions if you get stuck on this step.
+```
+df['Hour'] = df['timeStamp'].apply(lambda x: x.hour)
+df['Month'] = df['timeStamp'].apply(lambda x: x.month)
+df['Day of Week'] = df['timeStamp'].apply(lambda x: x.dayofweek)
+```
+* Notice how the Day of Week is an integer 0-6. Use the .map() with this dictionary to map the actual string names to the day of the week:
+```
+dmap = {0:'Mon',1:'Tue',2:'Wed',3:'Thu',4:'Fri',5:'Sat',6:'Sun'}
+df['Day of Week'] = df['Day of Week'].apply(lambda x: dmap[x])
+```
+* Now use seaborn to create a countplot of the Day of Week column with the hue based off of the Reason column. ```
+sns.countplot(x='Day of Week',data=df,hue='Reason')
+plt.legend(loc='center left', bbox_to_anchor=(1.0, 0.5))
+```
+* Now do the same for Month:
+```
+sns.countplot(x='Month',data=df,hue='Reason')
+plt.legend(loc='center left', bbox_to_anchor=(1.0, 0.5))
+```
+* Now create a gropuby object called byMonth, where you group the DataFrame by the month column and use the count() method for aggregation. Use the head() method on this returned DataFrame.
+```
+byMonth = df.groupby('Month').count()
+byMonth.reset_index(level=0, inplace=True)
+byMonth.head()
+```
+* Now create a simple plot off of the dataframe indicating the count of calls per month.
+```
+plt.xlabel('Month')
+plt.ylabel('Num of Calls')
+plt.title('Number of 911 calls per Month')
+plt.grid(True)
+plt.plot(byMonth['Month'],byMonth['e'].values)
+```
+* Now see if you can use seaborn's lmplot() to create a linear fit on the number of calls per month. Keep in mind you may need to reset the index to a column. `sns.lmplot(x='Month',y='e',data=byMonth)`
+* Create a new column called 'Date' that contains the date from the timeStamp column. You'll need to use apply along with the .date() method. `df['Date'] = df['timeStamp'].apply(lambda x: x.date())`
+* Now groupby this Date column with the count() aggregate and create a plot of counts of 911 calls.
+```
+byDate = df.groupby('Date').count()
+plt.figure(figsize=(12,3))
+plt.xlabel('Date')
+plt.ylabel('Num of Calls')
+plt.title('Total Calls per Day')
+plt.grid(True)
+plt.plot(byDate.index,byDate['e'])
+```
+* Now recreate this plot but create 3 separate plots with each plot representing a Reason for the 911 call
+```
+traffic = df[df['Reason']=='Traffic'].groupby('Date').count()
+plt.figure(figsize=(12,3))
+plt.xlabel('Date')
+plt.ylabel('Num of Calls')
+plt.title('Traffic')
+plt.grid(True)
+plt.plot(traffic.index, traffic['e'])
+```
+* Now let's move on to creating heatmaps with seaborn and our data. We'll first need to restructure the dataframe so that the columns become the Hours and the Index becomes the Day of the Week. There are lots of ways to do this, but I would recommend trying to combine groupby with an unstack method. Reference the solutions if you get stuck on this!
+```
+df1 = df.copy()
+df1.set_index(['Day of Week','Hour'], inplace=True)
+dfh = df1.groupby(level=['Day of Week','Hour']).sum()
+pivot = dfh.pivot_table(values='e',index=dfh.index.get_level_values('Day of Week'),columns=dfh.index.get_level_values('Hour'))
+pivot
+```
+* Now create a HeatMap using this new DataFrame.
+```
+plt.figure(figsize=(12,6))
+sns.heatmap(pivot,cmap="viridis")
+```
+* Now create a clustermap using this DataFrame.
+```
+sns.clustermap(pivot,cmap="viridis")
+```
 ### Lecture 69 - Finance Data Project
+
+* we need to install pandas-datareader to fetcj the data  `pip install pandas-datareader`
+* we can download data from [link](https://www.dropbox.com/s/s9uq4qvls4rghm7/all_banks?dl=0) and import them `df = pd.read_pickle('all_banks')`
 
 ## Section 14 - Introduction to Machine Learning
 
@@ -926,5 +1008,64 @@ layout = dict(
 * latar on we will use real data sets from kaggle
 * we import pandas, numpy pyplot from matplotlib, seaborn and set matplotlib inline
 * we load our csv to a dataframe `df = pd.read_csv('USA_Housing.csv')`
-* we have averaged values. area income, age,roums,bedrooms,population and the price
-* 
+* we have averaged value columns for the area the house is. area income, age,roums,bedrooms,population
+* we have also the hoses price and address
+* we chck our data with `df.info()`
+* we can also check `df.describe()` to get statistical info about the data
+* we can check our columns with `df.columns()`
+* we should get a better insight on the data, so we pairplot the table `sns.pairplot(df)`. we get histograms on the columns and also correlation scatterplots. se see that bedrooms and rooms are segmented as the have integer values (represented as floats)
+* we want to predict the price of the house do we do a distribution plot `sns.distplot(df['Price'])`. we see that kde peaks a t 1.2M and distributes evently around it
+* we also want an insight of the correlation between columns so we create a heatmap `sns.heatmap(fd.corr())` we immediately see what affects the price.
+* we have sufficient insight to start building our linear regression model
+* First we have to split our data into an X array containing the features to train on, and a Y array with the target variable (price). we will also delete the address column as we cannot process text. we do it manually setting the columns
+```
+df.columns
+X = df[['Avg. Area Income', 'Avg. Area House Age', 'Avg. Area Number of Rooms',
+               'Avg. Area Number of Bedrooms', 'Area Population']]
+y = df['Price']
+```
+* with features and target arrays ready, we now have to split our data into training and test sets. we import the module and do the split specifying the test size. we can see the train_test_split params with Shift+Tab. we use 40% for test data. random state is used to seed the split as it is done randomly. so selection of test and train data is random.
+```
+from sklearn.model_selection import train_test_split
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.4, random_state=101)
+```
+* with data ready we need to train our model 
+* we first import the Estimator `from sklearn.linear_model import LinearRegression`
+* then we instantiate our model (estimator) `lm = LinearRegression()`
+* we check the avaialble methods in our model (Shift+tab). we choose to train our model passing the train data `lm.fit(X_train,y_train)`
+* we evaluate our model by checking its coefficients and see how we can evaluate them `print(lm.intecept_)` => a number,  the coefficients show the relation to each feature in our data `lm.coef_`
+* to see the coefficient mapping better we create a dataframe. `pd.DataFrame(lm.coef_,X.columns=['Coeff'])`
+* What these coefficients mean? if i hold all other features fixed. a 1 unit increase of a feature will result to the relevant coefficient amount on the target. these are artificial data so they dont make much sense
+* we can load real data from inbuilt sklearn datasets. 
+* boston is a dictionary with some keys
+```
+from sklearn import load_boston
+boston = load_boston()
+boston.keys()
+print(boston['DESCR']) # description
+print(boston['data']) # data
+print(boston['feature_names']) # column labels
+print(boston['target']) # targeet [pricing]
+```
+
+### Lecture 81 - Linear Regression with Python Part 2
+
+* we will now see how to get predicitons from our model
+* we get the predictions from the model `lm.predict(X_test)`
+* `predictions` are the predicted values while `y_test` contains the target test data. we need to compare these two. 
+* we want to see the correlation so we create a scatter plot `plt.scatter(y_test, predictions)`. if they line up linearly with relative small jitter we know our prediction is good. a perfect straight line are perfectly correct predictions (unrelaistic)
+* we will now do a ditribution of the residuals (difference between predictions and test values) `sns.distplot(y_test-predictions)`. they look normally distributed. this is a GOOD sign. it means we selected the correct model
+* there are 3 evaluation metrics for regression problems:
+	* mean absolute error (MAE) the  mean of absolute value of errors: easiest to understand (average error)
+	* mean squared error (MSE) the mean of squared errors: more popular as it punishes larger errors (real world approach)
+	* root mean squared error (RMSE) the square root of the means of the squared errors : more popular than MSE as it is interpretable to Y units (like MAE)
+* all these are loss functions , our aim is to minimize them
+* we can easily calculate them with sklearn. we import the module `from sklearn import metrics`
+* from metrics we use the specialized functions
+```
+print('MAE:', metrics.mean_absolute_error(y_test, predictions))
+print('MSE:', metrics.mean_squared_error(y_test, predictions))
+print('RMSE:', np.sqrt(metrics.mean_squared_error(y_test, predictions)))
+```
+
+### Lecture 82 - Linear Regression Project
