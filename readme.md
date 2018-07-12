@@ -1219,4 +1219,67 @@ confusion_matrix(y_test,predictions)
 
 ### Lecture 91 - KNN Theory
 
+* Theory in ISL ch4. 
+* K Nearest Neighbors is a *Classification* algorithm that operates on a very simple principle
+* we will use an example to show it
+* imagine we had some imaginary data on dogs and horses, with heights and weights
+* if we do a jointplot between weight and height of dogs,horses we will see the linear correlation. if we add a hue on the plot baed on kind (horse/dog) we see that dogs are at the low end and horses on the high end. so from a weight/height datapoint it is quite easy to say with accuracy if it is a  dog or a horse
+* The KNN algorithm woirks as follows
+	* The training algorithm simply stores all data
+	* The prediction algorithm calculates the distance of a new data point from all points in our data, it sorts the points in our data by ascending distance from x, it calulates the majority label of the K nearest points and sets it a s the prediction
+* k is critical on the algorithm behaviour as it will directly affect what class a new point is assigned to
+* chosing 1 picks a lot of noise, chosing a large k creates a bias
+* KNN Pros:
+	* Very Simple
+	* Training is Trivial
+	* Works in any number of Classes
+	* easy to add more data
+	* few params (K, Distance metric)
+* KNN Cons: 
+	* High Prediction Cost (increases as dataset gets larger)
+	* Not good with high dimensional data (distances to many dimensions)
+	* Categorical features dont work well
+* A common interview task for a data scientisc position is to be given anonymized data and attempt to classify it. without knowing the context of the data.
+* We will simulate this scenario using some "classified" data, where what the columns represent is not known but we have to use KNN to classify it
+
+### Lecture 92 - KNN with Python
+
+* we import the libraries
+* we read in the classified data csv into df
+* it has random column names with numbers and a target class of 1 or 0
+* scale of data plays a big role in distance so it affects KNN. what we have to do as preprocess of our data is to standardize the variables rescaling them to the same scale. sklearn has a tool for the task. we impor it `from sklearn.preprocessing import StandardScaler` we instantiate it `scaler = StandardScaler()` and train it or *fit* it to our data (only on the numeric columns, not the target column which is categorical/binary) `scaler.fit(df.drop('TARGET CLASS', axis=1))`
+* then we use the trained scaler object to get the scaled features `scaled_features = scaler.transform(df.drop('TARGET CLASS', axis=1))`
+* scaled_features is actually an array of values. we use this array to recreate a features table which we can use in our algorithm `df_feat = pd.DataFrame(scaled_features, columns=df.columns[:-1])` we set as column names the column names of the original table excluding the last one (targets)
+* our dataset is ready
+* we import data splitter from sklearn and use it to split our data `X_train, X_test, y_train, y_test = train_test_split(scaled_features,df['TARGET CLASS'],
+                                                    test_size=0.30)`
+* we are ready to use the algorithm. we impor the Model `from sklearn.neighbors import KNeighborsClassifier`
+* we instantiate it passing k=1 (num of neighbors) `knn = KNeighborsClassifier(n_neighbors=1)` and fit it on our train data `knn.fit(X_train,y_train)`
+* we grab the predictions `pred = knn.predict(X_test)`
+* we import and use classification_report and confustion_matrix
+* our results are good enough but we will use the embow method to pick a good k value
+* the elbow method essentially reruns the knn algorithm for different k and store the mean error, then we plot the error vs k and find the best k
+```
+error_rate = []
+for i in range(1,40)
+	knn = KNeighborsClassifier(n_neighbors=i)
+	knn.fit(X_train,y_train)
+	pred_i = knn.predict(X_test)
+	error_rate.append(mean(pred_i != y_test)) # average of where the predictions where not equal to test values
+```
+* we plot the error rate to the k
+```
+plt.figure(figsize=(10,6))
+plt.plot(range(1,40),error_rate,color='blue', linestyle='dashed', marker='o',
+         markerfacecolor='red', markersize=10)
+plt.title('Error Rate vs. K Value')
+plt.xlabel('K')
+plt.ylabel('Error Rate')
+```
+* we look at the error rate. we stabilize around 20 at the low  range so we run for 17 and get our reports accuracy and precicion are better
+
+Section 19 - Decision Trees and Random Forests
+
+### Lecture 95 - Introduction to Tree Methods
+
 * 
