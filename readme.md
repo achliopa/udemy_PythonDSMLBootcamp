@@ -1069,3 +1069,122 @@ print('RMSE:', np.sqrt(metrics.mean_squared_error(y_test, predictions)))
 ```
 
 ### Lecture 82 - Linear Regression Project
+
+* 
+
+## Section 16 - Cross Variation and Bias-Variance Trade-Off
+
+### Lecture 84 - Bias Variance Trade-Off
+
+* Bias Variance Trade Off is a fundamental topic of understanding our model's performance
+* in Chapter 2 of ISL book  there is an indepth analysis
+* the bias-variance trade off is the point where we are adding just noise by adding model complexity (flexibility)
+* the training error goes down as it has to, but the test error is starting to go up
+* the model after the bias trade-off begins to overfit
+* imagine that the center of the target is a model that perfectly predict the correct values
+* as we move away from the bulls-ey our predictions get worse and worse
+* sometimes we get a good distibution of training data so we predict well and we are close to bulls eye, while somtimes our training data might be full of outliers or non-standard values rtesulting in poor predictions
+* these different realizations result in a scatter of hits on the target (variance)
+* we aim for low variance-low bias model (consistent low error predictions)
+* high bias-low variace are consistent but off target predictions (high error)
+* low-bias-highvariancea are non consistent on target predictions
+* a commot temptation for beginners in ML is to continually add complexity to a model until it fits the training set very well. like a polyonymal fit curve matching vert well a set of training points
+* doing this can cause the model to overfit (high bias) to our trainign data and can cause large errors on new data like the test set
+* we will take a look at an example model on how we can see overfitting occur from an error standpoint using test data!
+* we will use a black curve with some "noise" points off of it to represent the True shape the data follows
+* we have some data points. we start with simplest linear fit, then quadratic then spline raising the complexity to achieve best fit
+* we compare the MSE on test data and train data for these three cases drawing a line we see that the test-train MSE difference  is high  for linear average for quadratic and then starts to deviate high for test low for training data. 
+* so initial we have high bias low variance (high error similar train-test) in the middle average (low bias low variance) and then  hisgh varianc e (big deviation) low bias (low MSA for training) . 
+* we choose the average (bias-variance trade-off) under this we have underfitting and over it overfiting
+
+## Section 17 - Logistic Regression
+
+### Lecture 85 - Logistic Regression Theory
+
+* Sections 4-4.3 of ISL book
+* we want to learn about Logistic Regression as a method for Classification
+problems solving
+	* Spam versus Good Emails
+	* Loan Default (Yes/No)
+	* Diesease Diagnosis (Yes/No)
+* All the above are examples of Binary Classification
+* Classification can be Categorical
+* In Linear Regression we saw regression problems where we try to predict a continuous value
+* Although the name may be confusing, logistic classification allows us to solve classification problems, where we are trying to predict discrete categories
+* the convention for binary classification is to have two classes 0 and 1
+* we cannot use normal linear regression model on binary groups. it wont lead to a good fit
+* sat we want to predict the probability of defaulting on a loan. the feature is the salary. the higher the salary the higher the probaility of paying back the loan 1.0 is the payback and 0.0 ois to default. outr train data are binary so weither 1 or 0. with linear fit we get bad fit. we might get <0 numbers which make no sense.
+* we can transform our linear regression line to a logistic regression curve (s type) bound between 0 and 1.
+* this curve is the plot of the Sigmoid (aka Logistic) Function which takes any vlaue and outputs it to be between 0 and 1. *f(z)=1/(1+exp^-z)*
+* The SIgmoid Function takes any input. So we can take our Linear Regression Solution and place is into the Sigmoid Function. if our linear model is *y=b0+b1*x* our logistic model will be *p=1/(1+exp^(b0+b1*x))*
+* this results in a probability from 0 to 1 of belonging in the 1 class. then we set a cutoff point usually at 0.5 anything above we consider it class  1 (True) and anything below class 0 (False)
+* After we train our logistic regression model on some training data, we will evaluate our model's performance on some test data
+* We can use *confussion matrix* to evaluate classification models
+* e.g if we test for disease (Yes/No) we have a 2by2 matrix. the row will be Actual NO, Actual YES and the columns Predicted NO, Predicted YES
+	* Predicted NO & Actual NO 		= True Negative (TN)
+	* Predicted YES & Actual YES 	= True Positive (TP)
+	* Predicted YES & Actual NO 	= False Positive (FP) Type I Error
+	* Predicted NO & Actual YES 	= False Negative (FN) Type II Error
+* The first Metric is Accuracy (TP+TN)/total
+* Missclassification Rate or Error Rate (How often is it wrong) (FP+FN)/total   Accuracy = 1 - Error Rate
+* We will explore Logistic Regression using the famous Titanic data set to attemp to predict wether a passenger survived based off of their features
+* Then we will have a project with some Advertising data trying to predict if a customer clicked on an ad
+
+### Lecture 86 - Logistic Regression with Python Part 1
+
+* titanic is a typical beginners se t for classification
+* [Kaggle](https://www.kaggle.com/) hosts datasets for training
+* Competition offers challenges for some sort of price
+* we import all libs (numpy,pandas,matplotlib.pyplot,seaborn)
+* we load training data `train = pd.read_csv('titanic_train.csv')` in a panda dataframe
+* we check its columns and see there is a survived column that is our target, passenger class,gender,age,sibsp (siblings/spouses aboard)mparch (parents or children aboard), ticket id, ticket fare. cabin, port of embarkation
+* we will start investigating our dataset (exploratory data analysis)
+* we wull look for missing data with `train.isnull()` which outputs a bolean dataframe which we can feed in a heat map to find missing data `sns.heatmap(train.isnull(),yticklabels=False,cbar=False,cmap='viridis')`. we remove tickdata and colorbar. the results are revelatory. ~20% of age data is missing and ~80% of cabin data.
+* 20% of missing data is replaceable. at 80% we drop the column, or make it boolean (cabin known/not known)
+* its always good to see our target data in depth. we start with a simple countplot `sns.countplot(x='Survived',data=train)` we add a hue based on sex to the countplot. females had much hihgher survival rate than males (we expect to see it in coefficients). we also add ahue based on Pclass. again its revelatory. peopl from 3rd calss had much lower survival rate
+* we do a distplot on a numerical value age, removing the nulls `sns.distplot(train['Age'].dropna(),kde=False,bins=30)`. we have a binomial plot. a number of small children then a gap and then the peak of people of young age.
+* we explore columns one by one trying to get an understanding of our data set. w ego to SIbSp and do a count plot as it is discrete (int) and few. `sns.countplot(x='SibSp',data=train)`
+* we look into fare. we do a pandas histplot train['Fare'].hist(bins=40) fares lean hevily on the cheap side
+* we can do an interactive cufflinks plot on fare
+```
+import cufflinks as cf
+cf.go_offline()
+train['Fare'].iplotkind="hist",bins=30)
+```
+
+### Lecture 87 - Logistic Regression with Python Part 2
+
+* After exploring our data, we will clean them, turn them in an acceptable form for a machine learning algorithm
+* we will fill the missing age data with the mean average age of the dataset. this is a common practice. or we can do it more smartly by passing in the average age per passenger class as we guess there will be a correlation between class and age. to investigate it we do a boxplot `sns.boxplot(x='Pclass',y='Age',data=train)`. we see that paseengers in 3class tend to be older than 2nd or 3rd class
+* we will create a function to use it to fill in the data (impute)
+```
+def impute_age(cols):
+	Age = cols[0]
+	Pclass = cols[1]
+
+	if pd.isnull(Age):
+		if Pclass == 1:
+			return 37
+		elif Pclass == 2:
+			return 29
+		else:
+			return 24 
+	else: 
+		return Age
+```
+* we will apply this function `train['Age'] = train[['Age','Pclass']].apply(impute_age, axis=1)`
+* we do again the heatmap to confirm correct impute
+* we decide to drop the Cabin column completeley along column `train.drop('Cabin',axis=1)`
+* with very few missing data left we drop them from dataframe `train.dropna(inplace=True)`
+* our data are clean
+* we will now turn categorical features to  dummy data (eg. male/female to 0/1) or the Embarked city first letter to nums. we need to transorm these to numbers as machine learning algorithms work with numbers
+* we do it using the pandas get_dummies method `pd.get_dummies(train['Sex'])` this produces 2 mutualy exclusive columns. these are perfect predictor of the orher one if male is 1 female is 0. this is an issue called multicolumniarity. this messes up the algorithm so we drop females column with `sex = pd.get_dummies(train['Sex'],drop_first=True)`  and keep the male column as a dataframe
+* we follow a similar approach for Embarcked column `embark = pd.get_dummies(train['Embarked'],drop_first=True)` and we concat the tables `train = pd.concat([train,sex,embark],axis=1)`
+* we will ingore text based columns when we do our train/test data `train.drop(['Sex','Embarked','Name',Ticket'],axis=1,inplace=True)` 
+* we notice the passenger id is an index not useful for machine learning so we drop this. `train.drop(['PassengerId'],axis=1,inplace=True)` 
+* now our data is ready for machine learning algorithm
+* Pclass column is categorical class column (1,2,3). w ecould do pd.get_dummies on that column (good for ML). we can do it later to see how the algorim will react on using dummy data or keeping categorical data.
+
+### LEcture 88 - Logistic Regression with Python Part 3
+
+* 
