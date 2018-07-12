@@ -1187,4 +1187,36 @@ def impute_age(cols):
 
 ### LEcture 88 - Logistic Regression with Python Part 3
 
+* in our folder we have two csv files atraining ans test file. we have been working with the train file sofar and we will use it to get training and test data
+* we should clean the test file and use it
+* we make the X and y datasets
+```
+X = train.drop('Survived',axis=1)
+y = train['Survived']
+```
+* we import test_train_split from scikit `from sklearn.model_selection import test_train_split` and do the split in a 30/70 ratio `X_train, X_test, y_train, y_test = train_test_split(X,y, test_size=0.30, random_state=101)`
+* we import the Estimator Model `from sklearn.linear_model import LogisticRegression`
+* we create an  estimator model instance `logmodel = LogisticRegression()`
+* we train the model passign the train data leaving default params `logmodel.fit(X_train,y_train)`
+* we generate our predictions passing the test data `predictions = logmodel.predict(X_test)`
+* we are now reday to evaluate the results.
+* scikit learn has a handy tool for classification model evaluation rport tool
+* we import it `from sklearn.metrics import classification_report`
+* we use it wrapping it with print and passing actual test values and predictions `print(classification_report(y_test,predictions))`
+* it return some metrics for both results. precision,recall,f1-score and support
+* we can get the pure confusion matrix with 
+```
+from sklearn.metrics import confusion_matrix
+confusion_matrix(y_test,predictions)
+```
+* we have 81% accuracy. some ways of improving our scores is increase our training set (use both files),another way is grab feats of the name e.g title, cabin number
+
+### Lecture 89 - Logistic Regression Project
+
+* a good step in exploration is to make a pairplot of our dataset with hue on the target column
+
+## Section 18 - K Nearest Neighbors
+
+### Lecture 91 - KNN Theory
+
 * 
