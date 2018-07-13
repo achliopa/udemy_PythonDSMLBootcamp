@@ -1251,8 +1251,7 @@ confusion_matrix(y_test,predictions)
 * then we use the trained scaler object to get the scaled features `scaled_features = scaler.transform(df.drop('TARGET CLASS', axis=1))`
 * scaled_features is actually an array of values. we use this array to recreate a features table which we can use in our algorithm `df_feat = pd.DataFrame(scaled_features, columns=df.columns[:-1])` we set as column names the column names of the original table excluding the last one (targets)
 * our dataset is ready
-* we import data splitter from sklearn and use it to split our data `X_train, X_test, y_train, y_test = train_test_split(scaled_features,df['TARGET CLASS'],
-                                                    test_size=0.30)`
+* we import data splitter from sklearn and use it to split our data `X_train, X_test, y_train, y_test = train_test_split(scaled_features,df['TARGET CLASS'],test_size=0.30)`
 * we are ready to use the algorithm. we impor the Model `from sklearn.neighbors import KNeighborsClassifier`
 * we instantiate it passing k=1 (num of neighbors) `knn = KNeighborsClassifier(n_neighbors=1)` and fit it on our train data `knn.fit(X_train,y_train)`
 * we grab the predictions `pred = knn.predict(X_test)`
@@ -1265,7 +1264,7 @@ for i in range(1,40)
 	knn = KNeighborsClassifier(n_neighbors=i)
 	knn.fit(X_train,y_train)
 	pred_i = knn.predict(X_test)
-	error_rate.append(mean(pred_i != y_test)) # average of where the predictions where not equal to test values
+	error_rate.append(np.mean(pred_i != y_test)) # average of where the predictions where not equal to test values
 ```
 * we plot the error rate to the k
 ```
@@ -1282,4 +1281,52 @@ Section 19 - Decision Trees and Random Forests
 
 ### Lecture 95 - Introduction to Tree Methods
 
-* 
+* chapter8 of ISL.
+* We will see the rationale behind the Tree Methods by an example.
+* Say we paly Tennis with a friend every Saturday. sometimes the friend shows up, sometimes not. For him, it depends on a variety of factors like: weather, temperature, humidity, wind etc
+* We keep track of these feats and whetther we showed up to play or not createing a dataset
+* We want to use this data to predict whether or not he will show up to play.
+* An easy way to do it is through a Decision Tree
+* in this tree we have : 
+	* nodes. nodes split for the value of a certain attribute
+	* edges: outcome of a split to next node
+	* root: the node that performs the first split
+	* leaves: terminal nodes that predict the outcome
+* the Intuition behind Splits is simple. 
+* we start bybuilding  a truth table of all feats as columns, with its result being the target value. we write down all combinations anthe outcome. in a simple 3 feat example with a boolean output we see that the output has 1:1 relationship with Y, so the tree has 1 root node (y) and two leaves (outputs). we say that Y gives perfect separation between classes
+* other feats (X,Z) dont split classes perfectly. so if we split on these feats first we dont get good separation.
+* Entropy and Information Gain are the Mathematical Methoids of choosing the best split.
+	* Entropy: *H(S) = -Σi(pi(S)*log2pi(S))*
+	* Information Gain: *IG(S,A)=H(S)- Σ u belongsto Values(A)(|Su|/S*H(Su))*
+* Aside for the mathematical foundation the real intuition behind the splits is trying to choose the feat that best splits the data (trying to maximize the information gain of the split)
+* Random Forest is a way to Improve performance of single decision trees.
+* The main weakness of decision trees is that they dont have the  best predictive accuracy
+* This is mainly because of the high variance (different splits in the data can lead to very different trees)
+* Bagging is a general purpose procedure for reducing the variance for a ML method
+* We can build up the idea of Bagging by using Random Forests, Random Forest is a slight variation of this Bag of Trees that has even better perfirmance.
+* We will discuss it and code it in R (!?!)
+* What we do in Random Forest is we create an ensemble of Trees using Bootstrap samples of the Training Set.
+* Bootstrap samples of a training set means sampling from the dataset with replacement.
+* However we are builidng each tree, each time a split is considered, a random sample of m features is chosen as a split candidate from the full set of p features.
+* The split is only allowed to use one of these m features
+* A new random sample of features is chosen fo revery single tree at every single split
+* For classification this m random sample of m features is typically chosen to be the square root of p, where p is the full set of features
+* WHY TO USE RANDOM FORESTS???
+* suppose there is one very strong feature in the dataset, strong in predicting a cetrtain class. When using "bagged" trees (bootrap sampling), most of the trees will use that feature as the top split, reszulting in an ensemble of similar trees that are highly correlated. this is something we want to avoid 
+* averaging highly correlated quantities does not significantly reduce variance
+* By randomly leaving out candidate features from each split, random forests "decorrelates" the trees, sych that the averaging process can reduce the variance of the resulting model
+* with that process, features that really strongly predict the class data do not affect the result
+* We will take a look at at asmall data set of Kyphosis patients and try to predict if a corrective spine surgery was successful.
+* for our exercise project we will use loan data from Lending CLub to predict default rates
+
+### Lecture 97 - Decision Trees and Random Forest with Python
+
+* [BlogPost](https://towardsdatascience.com/enchanted-random-forest-b08d418cb411)
+* import libraries
+* we load our dataset from a csv ('kyphosis.csv') which shows the result of the corrective operation on children. the features are: age in months, number of spinal disks operated, and the index of the first spinal disk operated. the target is a boolean (successuful or unscucessful)
+* the data set is small (81 samples)
+* we do exploratory analysis on the data
+* we do a pairplot with the target as hue. `sns.pairplot(df,hue='Kyphosis')`
+* we import the splitter method and split our dataset on train and test data and results (droping the Kyphosis column)
+* we start by testing a single decision tree.
+* we import the estimator `from sklearn.tree import DecisionTreeClassifier`
