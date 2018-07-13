@@ -1375,4 +1375,36 @@ plt.xlabel('FICO')
 
 ### Lecture 100 - SVM Theory
 
-* 
+* chapter9 of ISL
+* Support vector machines (SVMs) are supervised learning models with associated learning algorithms tha analyze data and recognize patterns, used for classification and regression analytics
+* Given a set of training examples, each marked for belonging to one of two categories, an SVM training algorithm builds a model that assigns new examples into one category or the other, making it a non-probabilistic binary linear classifier
+* An SVM model is a representation of the examples as points in space, mapped so that the examples of the separate categories are divided by a clear gap that is as wide as possible.
+* New examples are then mapped into that same space and predicted to belong to a category based on which side of the gap they fall on
+* to show the basic idea behind SVMs we imagine a labeled training data set where the hued(target) joint scatterplot of 2 feats are clearly separated between target classes.
+* we want to do binary classification of new points, we can easily draw a separating "hyperplane" between the classes. but there are many options for separating lines (hyperplanes) that separate classes perfectly. how do we choose the best? usually we have one going along the middle of the distance and two parallel ones on the border(margin) of each class.
+* The vector points that these margin lines touch are known as Support Vectors.
+* We can expand this idea to non linearly separated data through the "kernel trick", the lines might be circles,
+* the kernel trick is adding one more dimension to the plot so he can separate them in the 3rd dimension
+* we will use support vector machines to predict whether a tumor is malignant or bening
+* for our project we will apply the concept to the famous iris flower data set
+* we will learn how to tune our models withthe GridSearch
+
+### Lecture 101 - Support Vector Machines with Python
+
+* we import the libs
+* we import a scikit learn builtin dataset (Breast cancer) `from sklearn.datasets import load_breast_cancer` and load it to a dictionary `cancer = load_breast_cancer()`
+* we see the feats as dictionary keys `cancer.keys()`
+* we get info on the origin of the dataset `print(cancer['DESCR'])`
+* we build a dataframe from the dicitonary `df_feat = pd.DataFrame(cancer['data'],columns=cancer['feature_names'])`
+* we check the labels with `df_feat.head(2)` and `df_feat.info()`
+* we have 30 cols of medical data. we lack of domain knowledge so we skip visualization
+* we build our target df `df_target = pd.DataFrame(cancer['target'],columns=['Cancer'])`
+* we go to ML directly. we split the data `X_train, X_test, y_train, y_test = train_test_split(df_feat, np.ravel(df_target), test_size=0.30, random_state=101)`
+* we import the estimator `from sklearn.svm import SVC`
+* we instantiate the model `model = SVC()`
+* we train the model using defaults, we do the prediction and evaluate the results. we get poor results and a Warning: UndefinedMetricWarning: Precision and F-score are ill-defined and being set to 0.0 in labels with no predicted samples.
+* What we see that the model classifies all data to a single  class. so it needs adjustment and probably normaization of the data prior to use
+* We will search for the best parameters using a GridSearch, it helps us find the right paramters (c or gamma)
+* To skip testing and searching we will use the grid of paramters to try out all the best possible combinations and see what fits best.
+* we import it `from sklearn.grid_search import GridSearchCV`
+* GridSearchCV takes in a dictionary that describes the parameters that should be tries  in a model to train the grid., the keys are the parameters and the values are a list of settings to be tested.
