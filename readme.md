@@ -1282,4 +1282,61 @@ Section 19 - Decision Trees and Random Forests
 
 ### Lecture 95 - Introduction to Tree Methods
 
+### Lecture 96 - Decision Trees and Random Forest in Python
+
+* [blog post](https://medium.com/@josemarcialportilla/enchanted-random-forest-b08d418cb411#.hh7n1co54)
+* we import the libraries
+* we load the data from kyphosis.csv
+* the data set contains data about patients with kyphosis
+* the data set contains a set of features asnd a target. target is a boolean(kyphosis absent or present after operation). the features are age of patient in months, number of spinal disks that were operated, and index of first disk operated
+* the set is small (81 samples)
+* we do exploratory data analysis politing a pairplot `sns.pairplot(df,hue='Kyphosis')
+* we start machine learning modelling`, we import split method and split our data
+* we will train a single decision tree
+* we import the estimator `from sklearn.tree import DecisionTreeClassifier`
+* we instantitate the model `dtree = DecisionTreeClassifier()`
+* we train it with data using default params `dtree.fit(X_train,y_train)`
+* we ge the predicitions `predictions = dtree.predict(X_test)`
+* we evaluate the results: import and print classification re port and confusion_matrix. results are rather good resustsl
+* we will now use random forest:
+* we import the estimator `from sklearn.ensemble import RandomForetClassifier`
+* we instnatiate it seting the number of estimators `rfc = RandomForestClassifier(n_estimators=200)`
+* we train, predict and evaluate the model. we have an improvemnt.
+* as dataset gets larger random forest gets better results
+* scikit has visualisation for decision trees. we wont use it often as we will use random forests which get better results.
+* this plot comes in a lib called pydot that we have to install `pip install pydot`
+* we also need the graphviz library. [graphviz](https://www.graphviz.org/) is a separate program altogether `sudo apt-get install graphviz`
+```
+from IPython.display import Image  
+from sklearn.externals.six import StringIO  
+from sklearn.tree import export_graphviz
+import pydot 
+
+features = list(df.columns[1:])
+features
+dot_data = StringIO()  
+export_graphviz(dtree, out_file=dot_data,feature_names=features,filled=True,rounded=True)
+
+graph = pydot.graph_from_dot_data(dot_data.getvalue())  
+Image(graph[0].create_png()) 
+```
+* Random forest is the baseline of ML
+
+### Lecture 97 - Decision Trees and Random Forest Project
+
+* we will use public available data from LendingClub regarding peer-to-peer credit
+* our aim is to use not.fully.paid column as taget and predict if the loan was flly paid back or not
+* they ask to plot a histogram of FICO score with hue based on categorized columns (hue) using pandas. doing hue withpanda viz is done like this
+```
+plt.figure(figsize=(10,6))
+loans[loans['credit.policy']==1]['fico'].hist(bins=35,color='red',label='Credit Policy 1',alpha=0.6)
+loans[loans['credit.policy']==0]['fico'].hist(bins=35,color='blue',label='Credit Policy 0')
+plt.legend()
+plt.xlabel('FICO')
+```
+
+## Section 20 - Support Vector Machines
+
+### Lecture 100 - SVM Theory
+
 * 
