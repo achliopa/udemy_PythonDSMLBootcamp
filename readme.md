@@ -1405,6 +1405,33 @@ plt.xlabel('FICO')
 * we train the model using defaults, we do the prediction and evaluate the results. we get poor results and a Warning: UndefinedMetricWarning: Precision and F-score are ill-defined and being set to 0.0 in labels with no predicted samples.
 * What we see that the model classifies all data to a single  class. so it needs adjustment and probably normaization of the data prior to use
 * We will search for the best parameters using a GridSearch, it helps us find the right paramters (c or gamma)
-* To skip testing and searching we will use the grid of paramters to try out all the best possible combinations and see what fits best.
+* To skip testing and searching for the right params we will use the grid of parameters to try out all the best possible combinations and see what fits best.
 * we import it `from sklearn.grid_search import GridSearchCV`
-* GridSearchCV takes in a dictionary that describes the parameters that should be tries  in a model to train the grid., the keys are the parameters and the values are a list of settings to be tested.
+* GridSearchCV takes in a dictionary that describes the parameters that should be tried in a model to train the grid., the keys are the parameters and the values are a list of settings to be tested.
+* C param controls the cost of misclassification on the training data (a large C value gives low bias and high variance). it gives low bias because we penalize the cost of missclassification with a larger C value.
+* the gamma parameter has to do with the free parameter of the Gaussian radial basis function (kernel='rbf'). this function is the best kernel to use. small gamma mean as Gaussian for large variance. high gamma leads to high bias low variance in the model
+* we set the param_grid passing the params to test and the range of values as a dictionary `param_grid` = { 'C':[.1,1,10,100,1000], 'gamma':[1,0.1,0.01,0.001,0.0001] }`
+* we feed the param grid to the gridsearch `grid = GridSearch(SVC(),param_grid,verbose=3)`
+* versbose number controls the amount of text
+* we pass the estumator,the param grid and config params
+* the output is a estimator model instance we can use to tainr on out training data.
+* it finds a best combination and iterates on this to get the best score
+* we gan get the best params with `grid.best_params_`
+* we gan get the best estimator with `grid.best_estimator_`
+* we gan get the best score with `grid.best_score_`
+* the *grid* has the best estimator ready to use. so we use it to get the best predictions `grid_predictions = grid.predict(X_test)`
+* we print the eval reports. the improvent is dramatical
+
+### Lecture 102 - SVM Project
+
+* we will work with famous iris flower dataset. only 50 samples, 3 samples
+* to display image in jupyter notebook:
+```
+from IPython.display import Image
+url = 'http://upload.wikimedia.org/wikipedia/commons/5/56/Kosaciec_szczecinkowaty_Iris_setosa.jpg'
+Image(url,width=300, height=300)
+```
+
+## Section 21 - K Means Clustering
+
+### Lecture 104 - K MEans Algorithm Theory
