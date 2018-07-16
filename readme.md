@@ -1487,3 +1487,96 @@ ax1.scatter(data[0][:,0],data[0][:,1],c=data[1],cmap='rainbow')
 ### Lecture 106 - K Means Project
 
 * EDA means (exploratory data analysis)
+
+## Section 22 - Principal Component Analysis
+
+### Lecture 108 - Principal Component Analysis
+
+* math in ch10.2 of ISL
+* PCA is an unsupervised statistical technique used to examine the interrelations among a set of variables in order tp identify the underlying structure of those variables
+* It is also known sometimes as a general *factor analysis*
+* Where regression determines a line of best fit to a data set, factor analysis determines several orthogonal lines of best fit on the data set
+* Orthogonal means "at right angles"
+	* These lines are perpendicular to each other in n-dimensional space
+* n-Dimensional Space is the variable sample space
+	* there are as many dimensions as there are variables, so in a data set with 4 variables the  sample space is 4-dimensional
+* To understand the intuition behind it we plot some data alonf 2 features in a scatterplot.
+* we plot the regression line of best fit
+* we add an orthogonal line to the regression line.
+* now we can start to understand the components of our dataset
+* *Components* are a linear transformation that chooses a variable system for the data  set such that the greatest variance of the dataset comes to lie on the first axis, the second greatest variance on the second axis and so on...
+* This process allows us to reduce the number of variables used in an analysis
+* in our plot the regression line "explains" 70% of the variation, the orthogonal line "explains" the 28% of the variation. 2% of the variation remains unexplained
+* Components are uncorrelated, since in the sample space they are orthogonal to each other
+* we can continue this analysis into higher dmensions although its impossible to plot over the 3rd dimencion
+* If we use this technique on a data set with a large number of variables, we can compress the amount of explained variation to just a few components
+* The most challenging part of PCA is interpretting the components
+* For our work with PCA in Python, we will use scikit learn
+* We usually want to standardize our data by some scale for PCA, so we will see how to do it
+* The algorithm is used for analysis of data and not a fully deployable model, we wont have a project for the topic
+
+### Lecture 109 - PCA with Python
+
+* PCA is a unsupervised learning algorithm used for component reduction
+* PCA is just a transformation of our data and attempts to find out what features explain the most variance in our data
+* we import the usual libs (data analysis and vis)
+* we load sklearn builtin datasets breast cancer data `from sklearn.datasets import load_breast_cancer` and `cancer = load_breast_cancer()` it is a dictionary like object holding data and labels as key value pairs
+* we make a dataframe out of it `df = pd.DataFrame(cancer['data'],columns=cancer['feature_names'])`
+* the dataset has 30 attibutes
+* if we used an other calssification algorithm we would do PCA first to see what feats are important in determining if a tumor is malignant or benign
+* we will use PCA to find the 2 principal components and then visualize data inthe 2 dimensional space
+* we first scale our data `from sklearn.preprocessing import StandardScaler`
+* we will scale our data so every feat has 1 unit variance
+* we make a scale rinstance `scaler = StandardScaler()`
+* we fit it to our dataframe `scaler.fit(df)`
+* we transform our df with scaler `scaled_data = scaler.transform(df)`
+* we perform now the PCA. we import it `from sklearn.decomposition import PCA`
+* we instantiate it passing the num of components we want to keep `pca = PCA(n_components=2)`
+* we fit pca to our scaled data `pca.fit(scaled_data)`
+* we transform the data to its first principal component `x_pca=pca.transform(scaled_data)`
+* our original scaled data shape is `scaled_data.shape` => (569,30)
+* our decomposed data `x_pca.shape` => (569,2)
+* we plot out these dimensions
+```
+plt.figure(figsize=(8,6))
+plt.scatter(x_pca[:,0],x_pca[:,1])
+plt.xlabel('First Principal Component')
+plt.ylabel('Second Principal Component')
+```
+* it is difficult to understand the usefuless of this plot, we add a color depeding on target class `plt.scatter(x_pca[:,0],x_pca[:,1],c=cancer['target'])` we see the clustering in full extent. 
+* based only on the first and second principle component we have aclear separation
+* PCA works like a compression algorithm in machine learning
+* these components we generate do not map 1to1 to specific feats in our data
+* components are combinations of the original features
+* if we print the array of components with `pca.components_` each row represents a principal component and each column relates it  back to the original features
+* we can visualize this relationship with a heatmap to see the depnedence of a component on the feats
+```
+df_comp = pd.DataFrame(pca.components_,columns=cancer['feature_names'])
+plt.figure(figsize=(12,6))
+sns.heatmap(df_comp,cmap='plasma',)
+```
+* The idea is to feed pca output to a classification algorithm reducing the complexity (logistic regression)
+
+## Section 23 - Recommender Systems
+
+### Lecture 110 - Recommender Systems
+
+* reading textbook: Recommender Systems by Jannach and Zanker
+* Fully developed and deployed recommendation systems are extremely complex and resource intensive
+* there are 2 notebooks for this course. a) Recommender Systems w/ Python b) Advanced Recommender Systems w/ Python
+* Full recommender systems require a heavy linear algebra background (WE HAVE IT!!) the Advanced Recommender System notebook is provided as an optional resource
+* A simpler version of creating a recommendation system using item similarity is used for the course example
+* The two most common types of recommender systems are *Content Based* and *Collaborative Filtering (CF)*
+	* Collaborative Filtering produces recommendations based on the knowledge of users attitude to items, that is it uses the "wisdom of the crowd" to recommend items
+	* Content-based recommender systems focus on the attributes of the items and give you recommendations based on the similarity between them
+* In real world, Collaborative filtering (CF) is more commonly used than content-based systemsbecause it usually gives better results and is relatively easy to understand (From an implementation perspective)
+* THe algorithm has the ability to do feature learning on its own, which means that it can start to learn for itself what features to use
+* CF can be divided into two subcategories: *Memory-Based Collaborative Filtering* and *Model-Based Collaborative Filtering*
+* In the advanced notebook, we implement Model-Based CF using a singular value decomposition (SVD) and Memory-Based CF by computing cosine similarity
+* For the simple Python implementation, we will create a content based recommender system for a data set of movies
+* This movie data set is usually a student's first data set when beginning to learn about recommender systems
+* It is quite large compared to some of the data set we ve used so far. in general, recommender systems in real  life deal with much larger data sets
+
+### Lecture 111 - Recommender Systems w/ Python Part 1
+
+* 
