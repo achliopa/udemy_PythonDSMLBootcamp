@@ -1410,7 +1410,7 @@ plt.xlabel('FICO')
 * GridSearchCV takes in a dictionary that describes the parameters that should be tried in a model to train the grid., the keys are the parameters and the values are a list of settings to be tested.
 * C param controls the cost of misclassification on the training data (a large C value gives low bias and high variance). it gives low bias because we penalize the cost of missclassification with a larger C value.
 * the gamma parameter has to do with the free parameter of the Gaussian radial basis function (kernel='rbf'). this function is the best kernel to use. small gamma mean as Gaussian for large variance. high gamma leads to high bias low variance in the model
-* we set the param_grid passing the params to test and the range of values as a dictionary `param_grid` = { 'C':[.1,1,10,100,1000], 'gamma':[1,0.1,0.01,0.001,0.0001] }`
+* we set the param_grid passing the params to test and the range of values as a dictionary `param_grid = { 'C':[.1,1,10,100,1000], 'gamma':[1,0.1,0.01,0.001,0.0001] }`
 * we feed the param grid to the gridsearch `grid = GridSearch(SVC(),param_grid,verbose=3)`
 * versbose number controls the amount of text
 * we pass the estumator,the param grid and config params
@@ -1434,4 +1434,56 @@ Image(url,width=300, height=300)
 
 ## Section 21 - K Means Clustering
 
-### Lecture 104 - K MEans Algorithm Theory
+### Lecture 104 - K Means Algorithm Theory
+
+* the K Means Clustering algotithm will allow us to cluster unlabeled in an unsupervised machine learning algorith
+* mathematical explanation in ch10 of ISL
+* K Means Clustering is an unsupervised learning algorithm that will attempt to group similar clusters together in your data
+* A typical clustering problem:
+	* Cluster similar documents
+	* Cluster Customers based on Features
+	* Market segmentation
+	* Identify similar physical groups
+*  The overall goal is to divide data into distinct groups such that observations within each group is similar
+* The K Means Algorithm:
+	* Chose a number of Clusters "K"
+	* Randomly assign each point to a cluster
+	* Untill clusters stop changing, repeat the following: For each cluster, compute the cluster centroid by taking the mean vector of points in the cluster. => Assign each data point to the cluster for which the centroid is the closest
+* Choosing a K value: we have to decide how many clusters we expect in the data
+* There is no easy answer for choosing the best "K" value
+* One way is the elbow method
+	* Compute the sum of squared error (SSE) for some values of k (for example 2,4,6,8)
+	* The SSE is defined as the sum of the squared distance between each member of the cluster and its centroid
+* If we plot k against the SSE, we will see that the error decreases as k gets larger. this is because when the number of clusters increases, they should be smaller
+* the idea of the elbow is to choose the k at which the SSE decreases abruptly
+* this produces an elbow effect int the graph (increasing k does not improve SSE so much any more)
+* in our project we will get real world data and try to cluster unis into groups, we will try to distinguish private from public
+
+### Lecture 105 - K Means with Python
+
+* we import the usual libraries (data analyzis + data viz)
+* in unsupervised lewnring we are not focused on results but on patters in the data
+* we import sklearn inbuilt data sets (blobs of data) `from sklearn.datasets import make_blobs`
+* we create a dataset for our algo with 200 samples from blob generator passing some parameters to control the distribution of our samples. `data = make_blobs(n_samples=200, n_features=, centers=4, cluster_std=1.8,random_state=101)`
+* with data in hand we will explore them. data is a tuple and data[0] is a numpy array. this numpy array is a number of columns and 2 columns of dfeatures `data[0].shape` => (200,2) 200samples with 2 features per sample
+* we have defines 4 centers in our data so we  expect to see 4 blobs
+* we plot a scatterplot of the 2 feat columns `plt.scatter(data[0][:,0],data[0][:,1],c=data[1],cmap='rainbow')` with color set on the samples cluster group as it was outputed by make_blob
+* we import our estimator `from sklearn.cluster import KMeans`
+* we create an instnace of our model. we need to define the number of clusters we want (we know it) `kmeans = KMeans(n_clusters=4)` 
+* we train the algorithm passing a numpy array (unlike supervised algs) `kmeans.fit(data[0])`
+* we get the centers (x,y) of the clusters on the 2 feat defined space. as a numpy array of nested arrays
+* we get the lables the agorithm beleaves our samples should have regarding the clusters they belong `kmeans.labels_` whic is a numpy array
+* if we work with real data and we dont know beforehand the labels and the actual clustering our work is done. but now we know the actual clustering from the blob generator output
+* we will plot the predicted clustering to the actual clustering, we plot 2 plots in one sharing y axis
+```
+fig, (ax1,ax2) =  plt.subplots(1,2,sharey=True,figsize=(10,6))
+ax1.set_title('K Means')
+ax1.scatter(data[0][:,0],data[0][:,1],c=kmeans.labels_,cmap='rainbow)
+ax2.set_title('Original')
+ax1.scatter(data[0][:,0],data[0][:,1],c=data[1],cmap='rainbow')
+```
+* the plots are look alikes so kmeans did a good job. if we try kemans with 2 or 3 clusters the output is very rreasonable too
+
+### Lecture 106 - K Means Project
+
+* EDA means (exploratory data analysis)
