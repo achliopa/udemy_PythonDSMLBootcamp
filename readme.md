@@ -1487,6 +1487,7 @@ ax1.scatter(data[0][:,0],data[0][:,1],c=data[1],cmap='rainbow')
 ### Lecture 106 - K Means Project
 
 * EDA means (exploratory data analysis)
+* to set a specific value in a dataframe `df.set_value('95','Grad.Rate',100)`. this creates empty rows with index integer. we try `df.iloc[95, df.columns.get_loc('Grad.Rate')] = 100`
 
 ## Section 22 - Principal Component Analysis
 
@@ -1579,4 +1580,51 @@ sns.heatmap(df_comp,cmap='plasma',)
 
 ### Lecture 111 - Recommender Systems w/ Python Part 1
 
-* 
+* we import the usual data analytics and vis libraries
+* we create a list of the column names `columns_names=['user_id','item_id','rating','timestamp']`
+* we load the data from csv `df = pd.read_csv('u.data',sep='\t',names=columns_names)` which is tab separated. we also pas the column names as csv is just raw data. 
+* the data set we go through is a famous one called movielens dataset. which contains user ratings for movies
+* we grab movie_titles from another csv `movie_titles=pd.read_csv('Movie_Id_Titles')`. this dataset maps item ids to movietitles. we will replace item-ids in the master dataset with the actual titles doing a merge `df=pd.merge(df,movie_titles, on='item_id')`.the merged dataframe contains id and titles now
+* we will show the best rated movies. to do this we will create a rating dataframe `df.groupby('title')['rating'].mean()` calculating the avearge rate for each title. we can sort them now in ascending order `df.groupby('title')['rating'].mean().sort_values(ascening=False).head()`
+* the info might be misleading as the average score might be due to only one review. so we also count the votes `df.groupby('title')['rating'].count().sort_values(ascening=False).head()`
+* we make a new dataframe called ratings with the titles and the ratings `ratings = pd.DataFrame(gf.groupby('title')['rating'].mean())`. 
+* we add a num of rating column next to the ratings `rating['num of rating'] = pd.DataFrame(df.groupby('title')['rating'].count())`
+* we explore the new ratings dataset with some histograms. `ratings['num of ratings'].hist(bins=70)` most titles have very few ratings
+* we do a histogram of the average ratings per title. there are peaks in whole nums (as titles get  whole num rates per review) `ratings['rating'].hist(bins=70)`
+* we use jointplot to see distribution of ratings vs nums `sns.jointplot(x='rating',y='num of ratings', data=ratings, alpha=0.5)`
+
+### Lecture 112 - Recommender Systems w/ Python Part 2
+
+* we will create a matrix that has user ids in one axis and movie titles on other axis. each cell will have the rating the user gave to the movie, we will use pivot to bring df in matrix form `moviemat = df.pivot_table(index='user_id',columns='title',values='rating')`. this matrix has a alot of null values
+* we check the top ten rated movies `ratings.sort_values('num of ratings',ascending=True).head(10)`
+* we choose 2 titles: Star Wars and Liar Liar and make datasets with their user ratings.
+```
+starwars_user_ratings = moviemat['Star Wars (1977)']
+liarliar_user_ratings = moviemat['Liar Liar (1997)']
+```
+* the two dataframes have user_id rows with the ratings they gave
+* we will use the corrwith() method yo vompute the pairwise correlation between rows or columns of two Dataframes `similar_to_starwars = moviemat.corrwith(starwars_user_ratings)` we get  all the movies and their correlation with the starwars movie rating
+* what we are looking for is the correlation of every other movie to the user behavior on the star wars movie
+* we do the same for liarliar `similar_to_liarliar = moviemat.corrwith(liarliar_user_ratings)`
+* we transform them to dataframes erasing the nuls 
+```
+corr_starwars = pd.DataFrame(similar_to_starwars, columns=['Correlation'])
+corr_starwars.dropna(inplace=True)
+```
+* what we end up is a dataframe with all the movies and a valuie that shows the correlation of their user rating to the user ratings of StarWars. what we want to get are the most correlated. the more similar movies `corr_starwars.sort_values('Correlation',ascending=False).head(10)`. we get movies with perfect correlation. these movies in our opinion dont make sense. probably are movies whit just 1 review from a person who gave star wars 5 stars. so we would want to filter out movies with less that a threshold of reviews. like 100.
+* we join the table with the num of rATINGS COLUMN `corr_starwars = corr_starwars.join(ratings['num of ratings'])` we filter out movies with <100 revies and sort it again by correlation `corr_starwars[corr_starwars['num of ratings']> 100].sort_values('Correlation',ascending=False).head(10)`
+* the results now do make sense we get perfect correlation with the same movie. we get goo d correlation with similar movies and then the correlation drops significantlky
+* now we do the same drill for liarliar
+```
+corr_liarliar = pd.DataFrame(similar_to_liarliar,columns=['Correlation'])
+corr_liarliar .dropna(inplace=True)
+corr_liarliar = corr_liarliar.join(ratings['num of ratings'])
+corr_liarliar[corr_liarliar['num of ratings']>100].sort_values('Correlation',ascending=False).head(10)
+```
+* we can play with threshold to improve recommandations relevance
+
+## Section 24 - natural Language Processing
+
+### Lecture 113 - Natural Language Processing Theory 
+
+* Read [Wikipedia Article](https://en.wikipedia.org/wiki/Natural_language_processing) for theory 
