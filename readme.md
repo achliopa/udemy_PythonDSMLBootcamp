@@ -1628,3 +1628,102 @@ corr_liarliar[corr_liarliar['num of ratings']>100].sort_values('Correlation',asc
 ### Lecture 113 - Natural Language Processing Theory 
 
 * Read [Wikipedia Article](https://en.wikipedia.org/wiki/Natural_language_processing) for theory 
+* NLP serves a lot of purposes when working with structured or unstructured text data
+* use cases: group news articles by topic, sift through 1000s of legal documents to find relevant ones
+* With NLP we would like to: Compile Documents, Featurize Them, Compare their features
+* Say we have 2 docs:
+	* "Blue House"
+	* "Red House"
+* A way to featurize docs is based on word count (transform them as vectorized word count)
+	* "Blue house" => (red,blue,house) => (0,1,1)
+	* "Red house" => (red,blue,house) => (1,0,1)
+* A document represented as a vector of word countsis called a "bag of words"
+* we can use cosine similarity on teh vectors made to determine similarity *sim(A,B)=cos(θ)=(AdotB)/(|A||B|)*
+* we can improve on Bag of Words by adjusting word counts based on their frequency in corpus(the group of all dosuments)
+* we can use TF-IDF (Term Frequency-Inverse Document Frequency) tod o this
+* This technique is used in ElasticSearch
+* Term Frequency: Importance of a term within that document
+	* TF(d,t) = Number of occurences of term t in document d
+* Inverse Document Frequency: Importance of the termn in the corpus
+	* IDF(t)=log(D/t) where D=total num of documents, t=number of documents with the term
+* Mathematically we can express TF-IDF as: Wx,y=TFx,y * log(N/dfx)
+	* TF-IDF = term x within document y
+	* TFx,y = frequency of x in y
+	* dfx = number of documents containing x
+	* N = total number of documents
+* TF-IDF contains the idea of importance of a word
+* before we get started with NLP and Python we'll need to download an additional library, `conda install nltk` or `pip install nltk` we will do it  in plotly env
+* our example notebook will be on a spam filter, our real project will be working with real data from Yelp, a review site
+
+### Lecture 114 - NLP with Python Part 1
+
+* we `import nltk`
+* we run `nltk.download_shell()` which runs an interactive shell in jupyter to  select options
+* we type *l* and see the list of packages
+* we type *d* and then *stopwords* to download the stopwords library
+* we will use a UCI dataset called SMS Spam collection DataSet . we have it in the spamcollection folder
+* we use list comprehension to load the data in a list `messages = [line.rstrip() for line in open('smsspamcollection/SMSSpamCollection')]` and print its length `print(len(messages))` it has 5574 messages
+* we will iterate through the 10 first messages to see their context
+```
+for mees_no,message in enumerate(messages[:10]):
+	print(mess_no,message)
+	print('\n')
+```
+* messages are labeled as spam or ham with the word then tab. we can check it with `messages[0]`
+* we will use pandas to easily parse the message in dataset `messages = pd.read_csv('smsspamcollection/SMSSpamCollection',sep='\t', names=['label','message'])` using the tab separation and adding labels
+* We will now do EDA on our data. we start with `messages.describe()` which revails that we have quite a few duplicate messages 
+* we will group by label and then describy to see how feats differentate between two classes `messages.groupby('label').describe()`
+* our bulk of work with NLP is features engineering. to extract feats we need domain knowledge. the better we know the dataset the more insight we can get
+* we check the length of the text messages and add it as a new column `messages['length'] = messages['message'].apply(len)`
+* we will visualize the lengths of the messages in a histogram `messages['length'].plot(bins=50, kind='hist') ` as we increase the bins we get bimodal behaviour
+* weget some insight in length `messages.length.describe()` the max length is 910
+* its quite wierd so we opt ot look into it `messages[messages['length'] == 910]['message'].iloc[0]` this is clear an outlier
+* we now want to plot the histogram of length but for both labels separated `messages.hist(column='length',by='label',bins=50,figsize=(12,4))` the kdes are clearly different
+
+### Lecture 115 - NLP with Python Part 2
+
+* our effort now will focus on text preprocessing (vectors)
+* we `import string` library
+* our first task is to remove punctuation
+* we create atest string `mess = 'Sample message! Notice: it has punctuation.'`
+* `string.punctuation` has abunch of punctuation suymbols to be used for filtering
+* we will use list comprehencion on teh string to clear the string from punctuation `nopunc = [c for c in mess if char not in string.punctuation]`. this is a punc free list of chars from our string. we reassemble it `nopunc = ''.join(nopunc)`
+* our task is now to remove stopwords
+* we import stopwords lib `from nltk.corpus import stopwords`
+* we test it `stopwords.words('english')` prints out all english stopwords
+* we split our string to list of words `nopunc.split()` and again use list conmprehencion to clear it from stopwords `clean_mess=[word for word in nopunc.split() if  word.lower() not it stopwords.word('english')]`
+* we bundle up all in a funct to apply in our dataset
+```
+def text_process(mess):
+    # Check characters to see if they are in punctuation
+    nopunc = [char for char in mess if char not in string.punctuation]
+    # Join the characters again to form the string.
+    nopunc = ''.join(nopunc)  
+    # Now just remove any stopwords
+    return [word for word in nopunc.split() if word.lower() not in stopwords.words('english')]
+```
+* we apply it to 5 first rows for testing `messages['message'].head(5).apply(text_process)` and IT WORKS
+* we could further normalize our dataset (remove single letter words)
+* stemming isa very common way to continue processing our text  data (considers similar meaning works as unique). stemming needs a reference dictionary to do it. nltk has that
+* we now proceed with vectorization of our data
+* we will create our bag of words in 3 steps
+	* Count how many times does a word occur in each message (Known as term frequency)
+	* Weigh the counts, so that frequent tokens get lower weight (inverse document frequency)
+	* Normalize the vectors to unit length, to abstract from the original text length (L2 norm)
+* our result table will be a matrix of messages vs words(unique) with a counter of word appearance in a message. the columns will be the word vectors or bags of words
+* we expect to have a lot of 0s in our matrix. scikit learn will output a Sparse matrix
+* we import CountVectorizer `from sklearn.feature_extraction.text import CountVectorizer` which accepts a lot of params
+* we instantiate it passing our custom function as analyzer. we directly chain the fit method to fit in on our data `bow_transformer = CountVectorizer(analyzer=text_process).fit(messages['message'])`
+* we want to see how many words our vocabulary contains `print(len(bow_transformer.vocabulary_))` it more than 11000
+* our bow_transformer is ready to be used on our dataset
+* we test it on a sample message. 
+```
+message4 = messages['message'][3]
+bow4 = bow_transformer.transform([message4])
+bow4.shape
+```
+* the vector has the indexes of the words and the num of occurences in the message.
+* its shape is a vector spanning the full vocabulary
+* to get the actual word in teh vocabulary by its id we use `print(bow_transformer.get_feature_names()[4073])` => U
+
+### Lecture 116 - NLP with Python Part 3
