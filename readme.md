@@ -1724,6 +1724,138 @@ bow4.shape
 ```
 * the vector has the indexes of the words and the num of occurences in the message.
 * its shape is a vector spanning the full vocabulary
-* to get the actual word in teh vocabulary by its id we use `print(bow_transformer.get_feature_names()[4073])` => U
+* to get the actual word in teh vocabulary by its id we use `print(bow_transformer.get_feature_names()[4073])` => 'U'
 
 ### Lecture 116 - NLP with Python Part 3
+
+* we already saw our bag of words transformar in action in one sample message
+* we can use the transformers .transform() method and transform the whole dataset `messages_bow = bow_transformer.transform(messages['message'])` our dataset has now the bow for each message `messages_bow.shape` => (5572,11425)
+* we expect it to be  as sparse table. so we will count the non-zero occurences `messages_bow.nnz` => 50548 cells so 1/1000 ratio,
+* we can calculate the sparcity in the table `sparcityt = (100.0 * messages_bow.nnz / (messages_bow.shape[0] * messages_bow.shape[1]))` => 0.079% so practicaly 0
+* with our bow ready we can calculate TF-iDF using sklearn's tf-idf transformer
+* we import it `from sklearn.feature_extraction.text import TfidfTransformer`
+* we instantiate a transformer from it `tfidf_transformer = TfidfTransformer().fit(message_bow)` fitting it on our bag of words
+* to test it we apply the trfidf transform on message4, bow that we have ready from before.  `tfidf4 = tfidf_transformer.transform(bow4)` the output ius a similar list but the balues are not counters like in bow but relevance scores (like elasticsearch) or weight values
+* we can use tfidf to check the document frequency of a given word `tfidf_transformer.idf_[bow_transformer.vocabulary_['university']]` => 8.527076498901426
+* we can create the full dataset tfidf with `messages_tfidf = tfidf_transformer.transform(messages_bow)`
+* so what we get is a matrix of tfidf scores.
+* what we are doing here is building an NLP pipeline
+* with the tfidf scores ready for the whole dataset ready we can now train the spam/ham classifier
+* we can use any classification algorithm to do it we choose the naive bayes classifier (also recommended in the cheat sheet)
+* we import it `from sklearn.naive_bayes import MultinomialNB`
+* we intantiate it creating a model and fiting it on our training data `spam_detect_model = MultinomialNB().fit(messages_tfidf,messages['label'])`
+* we evaluate our model on message4 `spam_detect_model.predict(tfidf4)[0]` => 'ham' , we compare it to the actual label `messages['label'][3]` and it is the same
+* if we wnat to evaluate all our messages `all_pred = spam_detect_model.predict(messages_tfidf)`
+* we have trained all inout training data so evaluation on training data does not make sense
+* we will split our data to do proper evaluation 
+```
+msg_train, msg_test, label_train, label_test = \
+train_test_split(messages['message'], messages['label'], test_size=0.3)
+```
+* so we now have to go through the complete pipeline to come up with our tf_idf to feed to naive bayes for our train set
+* it is such a common process that sklear has a ready data pipeline. we import it `from sklearn.pipeline import Pipeline`
+* we instantiate it passing the steps
+```
+pipeline = Pipleline([
+	('bow',CountVectorizer(analyzer=text_process)),
+	('tfidf', TfidfTransformer()),
+	('classifier',MultinomialNB())
+])
+```
+* our pipeline is ready to use it to our train data. `pipeline.fit(msg_train,label_train)`
+* we evaluate it `predictions = pipeline.predict(msg_test)`
+* we do our classification reports and evaluate on *label_test*. the results are exceptionaly good. 96%
+* pipeline is agood way to evaluate algorithms on the fly
+
+### Lecture 117 - NLP Project
+
+* we will use NLP to categorize reviews into * (onestar) or ***** (fivestar) category based on their content
+* we will use the pipeline to simplify the flow
+
+## Section 25 - Big Data and Spark w/ Python
+
+### Lecture 120 - Big Data Overview
+
+* In this Lecture we will see:
+	* Explanation of hadoop, MapReduce, Spark and PySPark
+	* Local vs Distributed Systems
+	* Overview of Hadoop Ecosystem
+	* Detailed overview of Spark
+	* Set-up Amazon Web-Services
+	* Resources on other SPark Options
+	* Jupyter Notebook hands-on code with PySpark and RDDs (resilient distributed datasets)
+* So far we've worked with datasets that can fit on a local computer (RAM in scale of 0-8GB)
+* What we can do if we have larger datasets?
+	* Try using an SQL DB to move storage on hard drive instead of RAM
+	* Use a distributed system, that distributes data onto multiple machines/computers (Correct Approach)
+* With distrubuted sytem we can harness the power of multiple cores in a scalar way, controlling it from the master node
+* A local process will use the computational resources of a single machine / A distributed process has access to the computational resources across a number of machines connected through the network
+* Scaling is easier in distributed systems (add dmore nodes). Also we get Fault tolerance
+* We will discuss the typical format of a distributed system that uses Hadoop (Apache Hadoop)
+	* Hadoop is a way to distribute very large files across multiple machines
+	* It uses the Hadoop Distributed File System (HDFS)
+	* HDFS allows a user to work with large data sets
+	* HDFS duplicates blocks of data for fault tolerance
+	* It uses MapReduce which allows computations on that data
+* An HDFS (distributed storage) includes a Name Node (master) and a bunch of Data Nodes (slaves) , each node has its CPU and RAM
+* HDFS will use blocks of data, with a default size of 128MB
+* Each of these blocks is replicated 3 times and distributed to support fault tolerance
+* splitting dat ainto smaller blocks provides prallelization during processing
+* multiple copies of a block prevent loss of data due to node failure
+* MapReducer is a way of splitting a computation task to a distributed set of files (HDFS)
+* It consists of Jop Tracker (Master Node) and multiple Task Trackers (Slave nodes)
+* Job tracker sends code to run on the task trackers
+* task trackers allocate CPU and memory for the tasks and monitor the tasks on the worker nodes
+* The approach on handling BigData we have seen contains 2 parts:
+	* Use HDFS to distribute large datasets
+	* Use MapReduce to distribute computational tasks to a distributed data set
+* Spark builds on top of these technologies providing imporvemtns
+
+### Lecture 121 - Spark Overview
+
+* This lecture gives an abstract overvview on:
+	* Spark, Spark vs MapReduce, Spark RDDs, RDD Operations
+* (Apache) Spark is one of the latest technologies used to quickly and easily hanbdle Big Data
+* Open Source. Introduced in 2013 by UC Berkley AMPlab. Very popular due to its ease of use and speed
+* Spark is a flexible alternative of MapReduce.
+* Spark can use data stored in a varietay of formats: Cassandra, AWS S3, HDFS, ... (Elastic?)
+* Spark vs MapReduce:
+	* MapReduce works only with HDFS stored files. Spark Not
+	* Spark performs operations up to 100xfaster than MapReduce. How??
+	* MapREduce writes most data to disk after each map and reduce operation. Spark keeps most of data in-memory after each transformation
+	* Spark can spill over to disk if memory is filled 
+* Spark works on the idea of RDD (Resilient Distributed Dataset)
+* RDDS have 4 main feats:
+	* Distributed Collection of Data
+	* Fault Tolerance
+	* Parallel operation - partitions
+	* Ability to use many data sources
+* Spark works on a distributed way: A Driver Program running the SparkContext <-Communicates-> Cluster Manager <-Communicates-> Worker Nodes (execute the tasks)
+* In an example we have:  RDD Objects: build the graph (Build Operator of  DAG=DirectedAcyclicGraph) -DAG-> DAGScheduler: split ggraph into stages of tasks (submit each stage as ready) -TaskSet-> TaskScheduler@ClusterManager:launch tasks via cluster manager (retry failed on straggling tasks) -Task-> Worker:execute taks (store and serve blocks)
+* Spark allows programmers to develop complex multistep data pipelines using DAGpatterns
+* Also it supports in-memory data-sharing across DAGs allowing different jobs to work on same data.
+* Spark in python is concerned on building RDDObjects, the rest is done transpoarently
+* RDDs are immutable, lazily evaluated and cachable
+* There are two types of RDD operators:
+	* Transformations
+	* Actions
+* That's what we code with python on Spark
+* The Basic actions we are going to look at are: 
+	* First: Return the first element in the RDD
+	* Collect: Return all the elements of the RDD as an array at the driver program
+	* Count: Return the number of elements in teh RDD
+	* Take: Return an array with the first n elements of the RDD
+* These 4 actions look like methods when we program w/ Python on the RDDobject we create
+* The Basic Transformations we are going to look at are: 
+	* filter(): applies a function to each element and returns elements that evaluate to true
+	* map(): transforms each element and preserves # of elements like pandas .apply()
+	* flatMap(): transforms each element into 0-N elements and changes # of elements 
+* Map() e.g grabbing first letter of a list of names
+* FlatMap(): transforming a corpus of text into a list of words
+* Pair RDDs: often RDDs will hold their values in tuples (key,value). This offers better partitioning of data and leads to functionality based on reduction
+* we have two more additional methods to use which are different in RDDs and Pair RDDs: 
+	* Reduce(): An action that will aggregate RDD elements using a function that returns a single element
+	* ReducByKey(): An action that will aggregate Pair RDD elements using a function that returns a PAir RDD
+* these ideas are similar to dataframe groupby() operation
+* Spark is under rapid development. Latest Additions to the Ecosystem: Sparq SQL, Saprk DataFrames, Mlib, GraphX, SPark Streaming
+* we will set upo  AWS account to use Spark in the cloud (also local installation is possible)
