@@ -1771,6 +1771,7 @@ pipeline = Pipleline([
 
 * we will use NLP to categorize reviews into * (onestar) or ***** (fivestar) category based on their content
 * we will use the pipeline to simplify the flow
+* fit_transform() method fits and transforms in the same time
 
 ## Section 25 - Big Data and Spark w/ Python
 
@@ -1859,3 +1860,108 @@ pipeline = Pipleline([
 * these ideas are similar to dataframe groupby() operation
 * Spark is under rapid development. Latest Additions to the Ecosystem: Sparq SQL, Saprk DataFrames, Mlib, GraphX, SPark Streaming
 * we will set upo  AWS account to use Spark in the cloud (also local installation is possible)
+
+### Lecture 123 - AWS Account Set-Up
+
+* [Amazon Guide](https://docs.aws.amazon.com/AmazonSimpleDB/latest/DeveloperGuide/AboutAWSAccounts.html)
+* we create an account [free](https://aws.amazon.com/free)
+* we get free EC2 S3 RDS. we will use EC2 to deploy a VM for a micro instance
+* in our training EC2 instance we keep all ports open. in production we should use strict settings on ports
+
+### Lecture 125 - EC2 Instance Set-Up
+
+* EC2 stands for Amazon Elastic Compute Cloud  and is a web service that provides resizable compute capacity in the cloud
+* we create our EC2 instanc ein AWS and use SSH to connect to it from our local machine
+* we setup Spark and Jupyter on teh EC2 Instance
+* login to aws -> EC2 -> UBuntu 64bit free tier -> t2.micro -> Conf. Instance Details ->  NUm of Instances:1 (higher num for larger datasets) all default => Add storage; all default -> add tags: Key: myspark, val: mymachine => config secuurity group type: all traffic => review & launch => launch => create new keypair key: newspark & downlaod and store .pem file => launch instance
+* we see it in console. when we are done we use actions -> instance state -> terminate to remove it and avoid charges
+
+### Lecture 126 - SSH with Mac and Linux
+
+* get the DNS address of our EC2 instance
+* we open a terminal and go to the directory where we have the .pem file. we `chmod 400 newspark.pem`
+* we run `ssh -i newspark.pem ubuntu@<publicdns>` and connect to our aws ec2 vm 
+
+### Lecture 127 - PySpark Setup
+
+* [instructions list](https://medium.com/@josemarcialportilla/getting-spark-python-and-jupyter-notebook-running-on-amazon-ec2-dec599e1c297)
+* we install anaconda on our remote EC2 instance
+```
+wget http://repo.continuum.io/archive/Anaconda3-4.1.1-Linux-x86_64.sh
+bash Anaconda3–4.1.1-Linux-x86_64.sh
+```
+* follow the instructions (all defaults). anaconda installs its own python 
+* we `source .bashrc` to add python location in path and confirm it with `which python`
+* now we need to configure jupyter notebook to work with ssh `jupyter notebook --generate-config`. it creates a configuration file for us
+* we need to create cerifications for our connections (.pem files)
+```
+mkdir certs
+cd certs
+sudo openssl req -x509 -nodes -days 365 -newkey rsa:1024 -keyout mycert.pem -out mycert.pem
+```
+* we answer the questions and we get teh *mycert.pem* cert file in our dir
+* we now edit the config file. we go to `~/.jupyter/`
+* we will use vi to edit the `vi jupyter_notebook_config.py` and add 
+```
+c = get_config()
+# Notebook config this is where you saved your pem cert
+c.NotebookApp.certfile = u'/home/ubuntu/certs/mycert.pem' 
+# Run on all IP addresses of your instance
+c.NotebookApp.ip = '*'
+# Don't open browser by default
+c.NotebookApp.open_browser = False  
+# Fix port to 8888
+c.NotebookApp.port = 8888
+```
+* we run the notebook with `jupyter notebook` it should run on port 8888. we access it from browser using the public dns and the port
+* proxys and firewalls make it refuse connection though
+* spark is written in scala so we need to install scala and scala uses java
+```
+sudo apt-get update
+ sudo apt-get install default-jre
+ java -version
+```
+* with java installed we install scala
+```
+sudo apt-get install scala
+scala -version
+```
+* we need py4j library to allow python to connect to java. to do this we need to make sure our pip install is connected to our anaconda installation path and not the default
+```
+export PATH=$PATH:$HOME/anaconda3/bin
+```
+* then we use conda to install pip `conda install pip` amd test to see our install path `which  pip` to verify its in anaconda
+* we install py4j with pip `pip install py4j`
+* we will now install spark and hadoop
+```
+wget http://archive.apache.org/dist/spark/spark-2.0.0/spark-2.0.0-bin-hadoop2.7.tgz
+sudo tar -zxvf spark-2.0.0-bin-hadoop2.7.tgz
+```
+* we connect python to spark
+```
+export SPARK_HOME='/home/ubuntu/spark-2.0.0-bin-hadoop2.7'
+export PATH=$SPARK_HOME:$PATH
+export PYTHONPATH=$SPARK_HOME/python:$PYTHONPATH
+```
+* we relaunch jupyter notebook. open it in a browser and test our installation with importing pyspark
+```
+from pyspark import SparkContext
+sc = SparkContext()
+```
+
+### Lecture 128 - Lanbda Expressions Review
+
+* we have already seen this in python bootcamp
+* lambdas are anonymous functions
+* normal func and its condenses forms
+```
+def square(num):
+	result = num**2
+	return result
+def square(num): return num**2
+```
+* its lambda equivalent `lambda num: num**2`
+* transforming a lambda to a normal func `sq = lambda num: num**2` we call call it normally like a func `sq(4)`
+* landas are passed into arrays or datasets
+* `rev = lambda s: s[::-1]` reversing strings or arrays
+* we can use multiple var in a lambda adder = lambda x,y: x+y
