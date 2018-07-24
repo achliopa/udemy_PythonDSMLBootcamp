@@ -1997,6 +1997,129 @@ def square(num): return num**2
 * `rev = lambda s: s[::-1]` reversing strings or arrays
 * we can use multiple var in a lambda adder = lambda x,y: x+y
 
+### Lecture 129 - Introduction to Spark and Python
+
+* we scp the pySpark notebooks to remote server
+* we import pySpark `from pySpark import SparkContext`
+* SparkContext represents the connection to the spark cluster. it can be used to create an RDD and broadcast variables on the cluster
+* we can have only one context running
+* to create it we need to make an instance `sc = SparkContext()`
+* we will try to read a text file. first we have to create it. we will use jupyter notebook commands to write to the file. whatever we put in the cell gets written to the file
+```
+%%writefile example.txt
+first line
+second line
+third line
+fourth line
+```
+* with the file created we can use the SparkContext() textFile method to create an RDD of strings out of a textfile in an FS.
+```
+textFile = sc.textFile('example.txt')
+```
+* textFile is an RDD object and we can perform operations on it. sc is the sparkcontext that connects to the spark cluster
+* we can perform actions and transformations on an RDD object
+* we run an action on the RDD `textFile.count()` and `textFile.first()`
+* to do more complicated tasks we can do transformations on the RDD to rteturn a new RDD. we apply the filter() method `secFind = textFile.filter(lambda line: 'second' in line)`
+* secFind is a new RDD. the transformation is fast as RDDs are lazily evaluated (transformation does not really execute until we perform an action on the new RDD)
+* to use spark with python: we create a SparkCOntext -> create an RDD -> perform actions on it or transformations
+
+### Lecture 130 - RDD Transformations and Actions
+
+* Important Terms:
+	* RDD: Resilient Distributed Dataset
+	* Transformation: Spark operation that produces an RDD
+	* Action: Spark operation that produces a local object
+	* Spark Job: Sequence of transformations on data with a final action
+* There are two common ways to create an RDD:
+	* `sc.parallelize(array` : Create RDD of elements of array or list
+	* `sc.textFile(path to file)` : Create RDD of lines from file
+* RDD Transformations:
+	* `filter(lambda x: x % 2 == 0)` : Discard non even elements
+	* `map(lambda x: x*2)` : Multiply each RDD element by 2
+	* `map(lamdba x: x.split())` : Split each string into words
+	* `flatMap(lambda x: x.split())` : Split each string into words and flatten sequence
+	* `sample(withReplacement-True,0.25)` : Create sample of 25% of elements with replacement
+	* `union(rdd)` : Append rdd to existing RDD
+	* `distinct()` : Remove duplicates in RDD
+	* `sortBy(lambda x: x, ascending=False)` : Sort eleemnts in descending order
+* RDD Actions:
+	* `collect()` : Convert RDD to in-memory list
+	* `take(3)` : First 3 elements in RDD
+	* `top(3)` : Top 3 elements in RDD
+	* `takeSample(withReplacement=True,3)` : Create sample of 3 elements with replacement
+	* `sum()` : Find element sum (assumes numeric elements)
+	* `mean()` : Find eleemnt mean (assumes numeric elements)
+	* `stdev()` : Find element deviation (assumens numeric elements)
+
+* we create a textfile in jupyter
+```
+%%writefile example2.txt passing in 4 lines of text
+first 
+second line
+the third line
+then a fourth line
+```
+* we create an sc(SparkCOntext) instance using it to make an RDD out of the file (text_rdd)
+* we perform a transformation on the RDD (word split) creating a new one `words = text_rdd.map(lambda line: line.split())`
+* we convert the new RDD it to an in-memory list `words.collect()`
+*  it is a list of nested lists of strings.
+* if we perfrom collect() on the original RDD is a list of strings
+* if instead of map we perform flatmap transformation on the original RDD and then convert it to an in-memory list `text_rdd.flatmap(lambda line: line.split()).collect()` instad of nested lists we get a single list with all the words (flat list)
+* we ll look into key-value pair RDDs
+* we write tabular data in atext file
+```
+%%writefile services.txt
+#EventId    Timestamp    Customer   State    ServiceID    Amount
+201       10/13/2017      100       NY       131          100.00
+204       10/18/2017      700       TX       129          450.00
+202       10/15/2017      203       CA       121          200.00
+206       10/19/2017      202       CA       131          500.00
+203       10/17/2017      101       NY       173          750.00
+205       10/19/2017      202       TX       121          200.00
+```
+* we use sc to make an RDD out of it and perform an action `.take(2)` selecting first 2 eleemtns (lines) as we have single strings per line
+* we split the lines `services.map(lambda line: line.split()).take(3)` our lines are now lists of strings (words)
+* to remove the hash from first label we do `services.map(lambda line: line[1:] if line[0]=='#' else line).collect()` so we rmove the hash if it is the first char in the line string else we leave the line as is. to apply the transformation we chain .collect() to  make it in-memory list
+* we will now use by key lambda methods which assume our data are in key value format
+* this format refers back to pair RDDs we talked about before
+* to get total sales per state (like groupby in pandas). in spark we dont havegroupby. we must use reducebyke.first we extract the 2 colums of interest using their index in the list or strings. we make it a tuple `pairs = clean.map(lambda lst: (lst[3],lst[-1]))`
+* we use `rekey = pairs.reduceByKey(lambda amt1,amt2: amt1 + amt2 )` which works like groupBy. as amounts are strings it just concats strings instead of adding nums
+* we fix that by converting them to floats `rekey = pairs.reduceByKey(lambda amt1,amt2: float(amt1)) + float(amt2) )`
+* to remove labels (first tuple) we perform `filter(lambda x: not x[0]=='State')`
+* we sort the results `.sortBy(lambda stateAmount: stateAmount[1], ascending=False)` sort by second elemetn in tuples in ascending order
+* we can use tuple unpacking for readibility
+* also meny times we dont use lanbda byt apply our own functions
+```
+x = ['ID','State','Amount']
+
+def func1(lst):
+    return lst[-1]
+
+def func2(id_st_amt):
+    # Unpack Values
+    (Id,st,amt) = id_st_amt
+    return amt
+
+func1(x)
+>> 'Amount'
+func2(x)
+>> 'Amount'
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ## Section 26 - Neural Nets and Deep Learning
 
 ### Lecture 131 - Neural Networks Theory
