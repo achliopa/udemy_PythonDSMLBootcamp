@@ -879,10 +879,41 @@ sns.heatmap(pivot,cmap="viridis")
 ```
 sns.clustermap(pivot,cmap="viridis")
 ```
+
 ### Lecture 69 - Finance Data Project
 
 * we need to install pandas-datareader to fetcj the data  `pip install pandas-datareader`
 * we can download data from [link](https://www.dropbox.com/s/s9uq4qvls4rghm7/all_banks?dl=0) and import them `df = pd.read_pickle('all_banks')`
+* [How to do remote data access with panad using pandaReader](https://pandas.pydata.org/pandas-docs/version/0.22/remote_data.html) [old version]http://pandas-datareader.readthedocs.io/en/latest/remote_data.html()
+
+### Lecture 71 - Finance Project Solutions
+
+* we use the datareader to import data for each major bancs using the stock tickers (3Letter code)
+* how to set column name levels `bank_stocks.columns.names = ['Bank Ticker','Stock Info']`
+* to select in a multi-level index we use .xs() cross-section
+* we spec the column and the level where it is and the axis we work on `bank_stocks.xs(key='Close',level='Stock Info',axis=1).max()`
+* pairploting with nulls throws error. we can drop lines `sns.pairplot(returns[1:])`
+* how to get the index with the min value? .idxmin()
+* how to select rows between string index? use array slice `returns.ix['2015-01-01':'2015-12-31'].`
+* how to plot selecting from multiindex using forloop and plotting with panda plots
+```
+for tick in tickers:
+    bank_stocks[tick]['Close'].plot(label=tick,figsize=(12,4))
+plt.legend()
+```
+* using xs
+```
+bank_stocks.xs(key='Close',axis=1,level='Stock Info').plot(label=tick,figsize=(12,4))
+plt.legend()
+```
+* using plotly for interaction
+```
+bank_stocks.xs(key='Close',axis=1,level='Stock Info').iplot()
+```
+* pandas have the .rolling() method which gets a window size param to apply functions on a rolling window of the data
+```
+BAC['Close'].ix['2008-01-01':'2009-01-01'].rolling(window=30).mean()
+```
 
 ## Section 14 - Introduction to Machine Learning
 
@@ -2108,4 +2139,114 @@ n_hidden_2 = 256
 
 ### Lecture 138 - MNIST with Multi-Layer Perceptron: Part 2
 
-* we 
+* we will create a function for our mulit-layer perceptron. it will take 3 arguments input x, weights and bias it will have 2 layers and use the [RELU](https://en.wikipedia.org/wiki/Rectifier_(neural_networks)) or rectifier activation function. for the fianl output layer we will use linear activation with matrix multiplication
+* tf has a multitude of activation functions
+```
+def multilayer_perceptron(x,weights,biases):
+	'''
+	x: Placeholder for DataInput
+	weights: Dict of weights
+	biases: Dict of bias values
+	'''
+	# First Hidden Layer with RELU Activation Function
+	# Step 1: X * W + B
+	layer_1 = tf.add(tf.matmul(x,weights['h1'],biases['b1'])
+	# Step 2: RELU(X * W + B) -> f(x) = max(0,x)
+	layer_1 = tf.nn.relu(layer_1)
+
+	# Second Hidden Layer
+	layer_2 = tf.add(tf.matmul(layer_1,weights['h2']),biases['b2'])
+	layer_2 = tf.nn.relu(layer_2)
+
+	# Last Output Layer
+	out_layer = tf.matmul(layer_2,wights['out']) + biases['out']
+
+	return out_layer
+```
+
+* we will look into the dictionaries of weights and  bias as we need to create them to pass them into the function. to define them we will use the tensorflow object type called Variable
+* tensorflow has a Graph object aware of the states of all variables
+* Variable is a modifiable Tensor that lives in tf Graph of interacting operations, modified by the computations. that's why we use Variables 
+* weights start as random and become adjusted during epochs (iterations)
+* the are a matrix of imput size  by layer neurons count
+```
+weights = {
+	'h1': tf.Variable(tf.random_normal([n_input,n_hidden_1])), # random_normal outputs random nums of a normal distribution
+	'h1': tf.Variable(tf.random_normal([n_hidden_1,n_hidden_2])),
+	'out': tf.Variable(tf.random_normal([n_hidden_2,n_classes]))
+}
+```
+* the output will have an 1 on the predicted class index, the rest will be 0
+* we define biases in the same way. we can set them initially to 1 or set them random
+```
+biases = {
+	'b1': tf.Variable(tf.random_normal([n_hidden_1])),
+	'b1': tf.Variable(tf.random_normal([n_hidden_2])),
+	'out': tf.Variable(tf.random_normal([n_classes]))
+}
+```
+* we need to define placeholder for x setting the shape to none by n_input  `x = tf.placeholder('float',[None,n_input])`
+* we do the same for outputs y `y = tf.placeholder('float',[None,n_classes])`
+* we now have all pieces in place so we can contruct our model
+```
+pred = multilayer_perceptron(x,weights,biases)
+```
+* we will define our cost optimization function (ADAM)
+```
+cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(pred,y))
+optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(cost)
+```
+* our model is ready so we can train it
+* next_batch method(batchsize) returns a tuple of 2 elements with the next batch of data `mnist.train.next_batch(10)` for our dataset the array is 784 size long and 10 size deep (num of samples)
+* the first element is the sample and the second is the target value (class)
+* we will run the session as an Interactive session not as a class style wrapper `sess = tf.InteractiveSession()`
+* we initialize our variables `tf.initialize_all_variables()`
+* we run our session `sess.run(init)`
+* we now can do the actual training in epochs
+```
+# 15 loops
+for epoch in range(training_epochs):
+	# cost
+	avg_cost = 0.0
+	total_batch = int(n_sample/batch_size)
+	for i in range(total_batch):
+		batch_x,batchy = mnist.train.next_batch(batch_size)
+		# tuple unpacking with _ as i dont need first val. c is the calculated loss
+		_,c = sess.run([optimizer,cost],feed_dict={x:batch_x,y:batch_y})
+		avg_cost += c/total_batch
+	print("Epoch: {} cost{:.4f}".format(epoch+1,avg_cost))
+print("Model has completed {} Epochs of training".format(training_epochs))
+```
+* we run the training session. our avg cost drops in each iteration
+* we can evaluate the model using tensorflow built in tools
+* first we count the correct predictions doing an equalcheck  `correct_predictions = tf.equal(tf.argmax(pred,1),tf.argmax(y,1))` on the predicted 1s to the actual 1s
+* this returns booleans so wqe need to cast it to a number `correct_predictions = tf.cast(corrent_predictions, 'float')`
+* we get the average `accuracy = tf.reduce_mean(correct_predictions)` which is a tensor object
+* we evaluate the result `accuracy.eval({x:mnist.test.images,y:mnist.test.labels})`
+* our accuracy is  94.4%
+* raising the num of epochs can raise the accuracy to 99.9% (state of the art results)
+
+### Lecture 140 - TensorFlow with Contrib.Learn
+
+* using TensorFlow with Sessions can get too complicated
+* there a community based Sci-Kit Learn interface to TensorFDlow called SKFlow
+* It became so popular that is now officialy part of TensorFlow, under Contrib
+* we use it in jupyter notebook
+* we import our dataset (IRIS) `from sklearn.datasets import load_iris` and instantiate it `iris = load_iris()`
+* it is a dictionary. we check the keys `iris.keys()` we will use only the data and target
+```
+X = iris['data']
+y = iris['target']
+```
+* we split the data in train test sets using sklearn like before
+* we build our model in normal sklearn style. first we import the lib `import tensorflow.contrib.learn.python.learn as learn`
+* learn includes a multitude of tensorflow models available. we use DNNClassifier `classifier = learn.DNNClassifier(hidden_units=[10,20,10],n_classes=3)` hidden_units is the num of nodes per layer, num of classes is self explanatory
+* we fit our classifier on our dataset adding DNN specific params like batch size and steps or epochs. `classifier.fit(X_train,y_train,steps=200,batch_size=32)`
+* we get our predictions and evaluate them the normal way (using the confusion matrix and classification report)
+
+### Lecture 141 - Tensorflow Project Exercise
+
+* We will do false bank note identification using UCI sample data
+* we will prepare our data before using contrib.learn to classify them using DNN
+* when our model evaluation is extremely well we compare our resuslts with the results from another model
+* convert pandas dataframe to numpy array (matrix) to import it into tensorflow (tensorflow accepts numpy arrays) `array = df.as_matrix()`
