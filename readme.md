@@ -817,11 +817,14 @@ df['Day of Week'] = df['timeStamp'].apply(lambda x: x.dayofweek)
 dmap = {0:'Mon',1:'Tue',2:'Wed',3:'Thu',4:'Fri',5:'Sat',6:'Sun'}
 df['Day of Week'] = df['Day of Week'].apply(lambda x: dmap[x])
 ```
-* Now use seaborn to create a countplot of the Day of Week column with the hue based off of the Reason column. ```
+* Now use seaborn to create a countplot of the Day of Week column with the hue based off of the Reason column. 
+```
 sns.countplot(x='Day of Week',data=df,hue='Reason')
 plt.legend(loc='center left', bbox_to_anchor=(1.0, 0.5))
 ```
+
 * Now do the same for Month:
+
 ```
 sns.countplot(x='Month',data=df,hue='Reason')
 plt.legend(loc='center left', bbox_to_anchor=(1.0, 0.5))
